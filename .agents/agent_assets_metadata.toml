@@ -1,0 +1,26 @@
+uploads = []
+outputs = []
+
+[[generated]]
+id = "mv_iw8ol3oNDZE2dEJgIP"
+uri = "file://artifacts/philin-solar/src/assets/images/home-solar.png"
+type = "image"
+title = "Home with solar panels"
+
+[[generated]]
+id = "mp06OAB_2cnfISn9qIiSE"
+uri = "file://artifacts/philin-solar/src/assets/images/commercial-solar.png"
+type = "image"
+title = "Commercial solar installation"
+
+[[generated]]
+id = "FeyiYwgmAj5yuTL94p_kA"
+uri = "file://artifacts/philin-solar/src/assets/images/solar-close-up.png"
+type = "image"
+title = "Solar panels close up"
+
+[[generated]]
+id = "UkQ_mtuOiBWYkELCq9YIA"
+uri = "file://artifacts/philin-solar/src/assets/images/aerial-solar.png"
+type = "image"
+title = "Aerial solar array"
