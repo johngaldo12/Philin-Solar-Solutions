@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Phone, Mail, Clock } from "lucide-react";
+import { MapPin, Phone, Mail, Clock, Facebook, CreditCard, MessageCircle } from "lucide-react";
 import aerialSolarImg from "@/assets/images/aerial-solar.png";
 
 const fadeInUp = {
@@ -21,7 +21,7 @@ export default function ContactPage() {
           <div className="absolute inset-0 bg-foreground/80"></div>
         </div>
         <div className="container mx-auto px-4 md:px-6 relative z-10">
-          <motion.div 
+          <motion.div
             initial="hidden"
             animate="visible"
             variants={fadeInUp}
@@ -39,9 +39,9 @@ export default function ContactPage() {
       <section className="py-24 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16">
-            
+
             {/* Contact Form */}
-            <motion.div 
+            <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
@@ -60,17 +60,17 @@ export default function ContactPage() {
                     <Input id="lastName" placeholder="Dela Cruz" className="h-12" />
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address</Label>
                   <Input id="email" type="email" placeholder="juan@example.com" className="h-12" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="phone">Phone Number</Label>
                   <Input id="phone" type="tel" placeholder="+63 917 123 4567" className="h-12" />
                 </div>
-                
+
                 <div className="space-y-2">
                   <Label htmlFor="service">Service Interested In</Label>
                   <select id="service" className="flex h-12 w-full items-center justify-between rounded-md border border-input bg-transparent px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50">
@@ -94,7 +94,7 @@ export default function ContactPage() {
             </motion.div>
 
             {/* Contact Info */}
-            <motion.div 
+            <motion.div
               initial="hidden"
               whileInView="visible"
               viewport={{ once: true }}
@@ -109,16 +109,16 @@ export default function ContactPage() {
                       <MapPin className="w-6 h-6" />
                     </div>
                     <div>
-                      <h4 className="text-xl font-semibold mb-2">Head Office</h4>
+                      <h4 className="text-xl font-semibold mb-2">Satellite Office</h4>
                       <p className="text-muted-foreground leading-relaxed">
                         Philin Industrial Corp.<br />
-                        Lot 35 Block 1 Ruby Street, Sta. Lucia Village 5,<br />
-                        Punturin, Valenzuela City,<br />
-                        Metro Manila, Philippines
+                        SM Consolacion Diversion Road,<br />
+                        Danglag, Consolacion, Cebu,<br />
+                        Philippines 6001
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-6">
                     <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
                       <Phone className="w-6 h-6" />
@@ -126,12 +126,12 @@ export default function ContactPage() {
                     <div>
                       <h4 className="text-xl font-semibold mb-2">Phone</h4>
                       <p className="text-muted-foreground leading-relaxed">
-                        +63 2 1234 5678<br />
-                        +63 917 123 4567
+                        <a href="tel:+639666651623" className="hover:text-primary transition-colors">+63 966 665 1623</a><br />
+                        <a href="tel:+6390662409733" className="hover:text-primary transition-colors">+63 906 240 9733</a>
                       </p>
                     </div>
                   </div>
-                  
+
                   <div className="flex gap-6">
                     <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
                       <Mail className="w-6 h-6" />
@@ -139,8 +139,29 @@ export default function ContactPage() {
                     <div>
                       <h4 className="text-xl font-semibold mb-2">Email</h4>
                       <p className="text-muted-foreground leading-relaxed">
-                        info@philinsolar.com.ph<br />
-                        sales@philinsolar.com.ph
+                        <a href="mailto:gamz.philincebu2025@gmail.com" className="hover:text-primary transition-colors">gamz.philincebu2025@gmail.com</a>
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-6">
+                    <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
+                      <Facebook className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">Facebook</h4>
+                      <p className="text-muted-foreground leading-relaxed">Gamaliel C. Ermac</p>
+                    </div>
+                  </div>
+
+                  <div className="flex gap-6">
+                    <div className="w-14 h-14 bg-primary/10 rounded-2xl flex items-center justify-center text-primary shrink-0">
+                      <MessageCircle className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <h4 className="text-xl font-semibold mb-2">WhatsApp / Viber</h4>
+                      <p className="text-muted-foreground leading-relaxed">
+                        <a href="tel:+639666651623" className="hover:text-primary transition-colors">09666651623</a>
                       </p>
                     </div>
                   </div>
@@ -158,6 +179,30 @@ export default function ContactPage() {
                       </p>
                     </div>
                   </div>
+                </div>
+              </div>
+
+              <div className="bg-primary text-white p-8 rounded-3xl">
+                <h4 className="font-semibold text-lg mb-4">Contact Person</h4>
+                <p className="text-white/90 leading-relaxed mb-2">
+                  <strong className="text-white">Gamaliel C. Ermac</strong>
+                </p>
+                <p className="text-white/80 text-sm mb-4">COO / Project Consultant</p>
+                <div className="flex flex-wrap gap-2">
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">Phone: +63 966 665 1623</span>
+                  <span className="px-3 py-1 bg-white/20 rounded-full text-xs font-semibold">WhatsApp / Viber: 09666651623</span>
+                </div>
+              </div>
+
+              <div className="bg-muted p-8 rounded-3xl">
+                <h4 className="font-semibold text-lg mb-4 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5 text-primary" />
+                  Payment Methods Accepted
+                </h4>
+                <div className="flex flex-wrap gap-3">
+                  <span className="px-4 py-2 bg-white rounded-full text-sm font-semibold text-foreground border border-border">Bank Transfer</span>
+                  <span className="px-4 py-2 bg-white rounded-full text-sm font-semibold text-foreground border border-border">GCash</span>
+                  <span className="px-4 py-2 bg-white rounded-full text-sm font-semibold text-foreground border border-border">Maya</span>
                 </div>
               </div>
 

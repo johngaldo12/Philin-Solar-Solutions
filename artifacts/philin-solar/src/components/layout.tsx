@@ -140,15 +140,15 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <ul className="space-y-4">
                 <li className="flex items-start gap-3 text-gray-400 text-sm">
                   <MapPin className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                  <span>Lot 35 Block 1 Ruby Street, Sta. Lucia Village 5, Punturin, Valenzuela City, Metro Manila, Philippines</span>
+                  <span>SM Consolacion Diversion Road, Danglag, Consolacion, Cebu, Philippines 6001</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-400 text-sm">
                   <Phone className="h-5 w-5 text-primary shrink-0" />
-                  <span>+63 2 1234 5678</span>
+                  <span>+63 966 665 1623</span>
                 </li>
                 <li className="flex items-center gap-3 text-gray-400 text-sm">
                   <Mail className="h-5 w-5 text-primary shrink-0" />
-                  <span>info@philinsolar.com.ph</span>
+                  <span>gamz.philincebu2025@gmail.com</span>
                 </li>
               </ul>
             </div>

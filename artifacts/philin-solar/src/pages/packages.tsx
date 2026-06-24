@@ -324,7 +324,7 @@ export default function PackagesPage() {
             </motion.div>
             <motion.p variants={fadeInUp} className="mt-6 text-white/60 text-sm flex items-center justify-center gap-2">
               <Mail className="w-4 h-4" />
-              philincebuofficial@gmail.com
+              gamz.philincebu2025@gmail.com
             </motion.p>
           </motion.div>
         </div>
