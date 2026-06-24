@@ -9,6 +9,8 @@ import ServicesPage from "@/pages/services";
 import AccreditationsPage from "@/pages/accreditations";
 import ContactPage from "@/pages/contact";
 import AboutPage from "@/pages/about";
+import PackagesPage from "@/pages/packages";
+import GalleryPage from "@/pages/gallery";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -20,6 +22,8 @@ function Router() {
         <Route path="/" component={HomePage} />
         <Route path="/about" component={AboutPage} />
         <Route path="/services" component={ServicesPage} />
+        <Route path="/packages" component={PackagesPage} />
+        <Route path="/gallery" component={GalleryPage} />
         <Route path="/accreditations" component={AccreditationsPage} />
         <Route path="/contact" component={ContactPage} />
         <Route component={NotFound} />
