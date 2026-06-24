@@ -8,6 +8,7 @@ import HomePage from "@/pages/home";
 import ServicesPage from "@/pages/services";
 import AccreditationsPage from "@/pages/accreditations";
 import ContactPage from "@/pages/contact";
+import AboutPage from "@/pages/about";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -17,6 +18,7 @@ function Router() {
     <Layout>
       <Switch>
         <Route path="/" component={HomePage} />
+        <Route path="/about" component={AboutPage} />
         <Route path="/services" component={ServicesPage} />
         <Route path="/accreditations" component={AccreditationsPage} />
         <Route path="/contact" component={ContactPage} />
