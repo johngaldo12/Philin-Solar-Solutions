@@ -61,9 +61,9 @@ const accreditations = [
 
 export default function AccreditationsPage() {
   return (
-    <div className="w-full bg-gray-50 min-h-screen">
+    <div className="w-full min-h-screen">
       {/* Header */}
-      <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-white border-b border-border">
+      <section className="pt-24 pb-16 md:pt-32 md:pb-24 bg-white/80 backdrop-blur-md border-b border-border/30">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div 
             initial="hidden"

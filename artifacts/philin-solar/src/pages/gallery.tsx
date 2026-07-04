@@ -84,7 +84,7 @@ export default function GalleryPage() {
       </section>
 
       {/* Gallery Content */}
-      <section className="py-20 bg-gray-50">
+      <section className="py-20 bg-white/75 backdrop-blur-md">
         <div className="container mx-auto px-4 md:px-6">
 
           {/* Filter tabs */}

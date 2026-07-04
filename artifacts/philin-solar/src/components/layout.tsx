@@ -2,6 +2,7 @@ import { Link, useLocation } from "wouter";
 import { Menu, X, Phone, Mail, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
+import { PageBackground } from "@/components/page-background";
 import logoImg from "@assets/received_1026107686615140_1782283900710.jpeg";
 
 export function Layout({ children }: { children: React.ReactNode }) {
@@ -33,7 +34,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ];
 
   return (
-    <div className="min-h-screen flex flex-col font-sans text-foreground bg-background">
+    <PageBackground>
+      <div className="min-h-screen flex flex-col font-sans text-foreground">
       <header
         className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           isScrolled ? "bg-white/90 backdrop-blur-md shadow-sm py-3" : "bg-white py-5"
@@ -165,6 +167,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </footer>
-    </div>
+      </div>
+    </PageBackground>
   );
 }
