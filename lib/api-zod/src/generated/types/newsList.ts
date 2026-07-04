@@ -5,7 +5,8 @@
  * API specification
  * OpenAPI spec version: 0.1.0
  */
+import type { NewsPost } from './newsPost';
 
-export interface HealthStatus {
-  status: string;
+export interface NewsList {
+  posts: NewsPost[];
 }

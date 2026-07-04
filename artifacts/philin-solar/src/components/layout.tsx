@@ -29,6 +29,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { href: "/services", label: "Services" },
     { href: "/packages", label: "Packages" },
     { href: "/gallery", label: "Gallery" },
+    { href: "/news", label: "News" },
     { href: "/accreditations", label: "Accreditations" },
     { href: "/contact", label: "Contact" },
   ];
@@ -122,6 +123,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 <li><Link href="/services" className="text-gray-400 hover:text-primary transition-colors text-sm">Services</Link></li>
                 <li><Link href="/packages" className="text-gray-400 hover:text-primary transition-colors text-sm">Packages &amp; Pricing</Link></li>
                 <li><Link href="/gallery" className="text-gray-400 hover:text-primary transition-colors text-sm">Gallery</Link></li>
+                <li><Link href="/news" className="text-gray-400 hover:text-primary transition-colors text-sm">News</Link></li>
                 <li><Link href="/accreditations" className="text-gray-400 hover:text-primary transition-colors text-sm">Accreditations</Link></li>
                 <li><Link href="/contact" className="text-gray-400 hover:text-primary transition-colors text-sm">Contact Us</Link></li>
               </ul>

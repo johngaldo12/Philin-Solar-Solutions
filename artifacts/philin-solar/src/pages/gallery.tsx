@@ -3,10 +3,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" as const } },
 };
 
 const stagger = {
@@ -14,41 +15,66 @@ const stagger = {
   visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
-const ceremonialImages = [
-  { src: "/images/ceremonial/ceremonial-01.jpg", alt: "Team at Climate Change Commission Philippines office" },
-  { src: "/images/ceremonial/ceremonial-02.jpg", alt: "Team at Solar & Storage Live exhibition" },
-  { src: "/images/ceremonial/ceremonial-03.jpg", alt: "Team at trade show floorplan" },
-  { src: "/images/ceremonial/ceremonial-04.jpg", alt: "Turn Over Ceremony solar water system" },
-  { src: "/images/ceremonial/ceremonial-05.jpg", alt: "Team at HYCSOLAR booth" },
-  { src: "/images/ceremonial/ceremonial-06.jpg", alt: "Team at GOODWE Tier 1 booth" },
-  { src: "/images/ceremonial/ceremonial-07.jpg", alt: "Water Philippines 2025 exhibition" },
-  { src: "/images/ceremonial/ceremonial-08.jpg", alt: "Conference networking session" },
-  { src: "/images/ceremonial/ceremonial-09.jpg", alt: "Conference with climate action partners" },
-  { src: "/images/ceremonial/ceremonial-10.jpg", alt: "Meeting with climate action leaders" },
-  { src: "/images/ceremonial/ceremonial-11.jpg", alt: "Team at formal conference event" },
-  { src: "/images/ceremonial/ceremonial-12.jpg", alt: "Handshake ceremony at Province of Cebu" },
-  { src: "/images/ceremonial/ceremonial-13.jpg", alt: "Climate Impact awareness event" },
-  { src: "/images/ceremonial/ceremonial-14.jpg", alt: "Team with provincial officials" },
-  { src: "/images/ceremonial/ceremonial-15.jpg", alt: "Sustainability workshop ceremony" },
-  { src: "/images/ceremonial/ceremonial-16.jpg", alt: "National Adaptation Plan workshop" },
+interface GalleryPhoto {
+  id: number;
+  src: string;
+  alt: string;
+  category: string;
+}
+
+const staticCeremonialImages: GalleryPhoto[] = [
+  { id: -1, src: "/images/ceremonial/ceremonial-01.jpg", alt: "Team at Climate Change Commission Philippines office", category: "ceremonial" },
+  { id: -2, src: "/images/ceremonial/ceremonial-02.jpg", alt: "Team at Solar & Storage Live exhibition", category: "ceremonial" },
+  { id: -3, src: "/images/ceremonial/ceremonial-03.jpg", alt: "Team at trade show floorplan", category: "ceremonial" },
+  { id: -4, src: "/images/ceremonial/ceremonial-04.jpg", alt: "Turn Over Ceremony solar water system", category: "ceremonial" },
+  { id: -5, src: "/images/ceremonial/ceremonial-05.jpg", alt: "Team at HYCSOLAR booth", category: "ceremonial" },
+  { id: -6, src: "/images/ceremonial/ceremonial-06.jpg", alt: "Team at GOODWE Tier 1 booth", category: "ceremonial" },
+  { id: -7, src: "/images/ceremonial/ceremonial-07.jpg", alt: "Water Philippines 2025 exhibition", category: "ceremonial" },
+  { id: -8, src: "/images/ceremonial/ceremonial-08.jpg", alt: "Conference networking session", category: "ceremonial" },
+  { id: -9, src: "/images/ceremonial/ceremonial-09.jpg", alt: "Conference with climate action partners", category: "ceremonial" },
+  { id: -10, src: "/images/ceremonial/ceremonial-10.jpg", alt: "Meeting with climate action leaders", category: "ceremonial" },
+  { id: -11, src: "/images/ceremonial/ceremonial-11.jpg", alt: "Team at formal conference event", category: "ceremonial" },
+  { id: -12, src: "/images/ceremonial/ceremonial-12.jpg", alt: "Handshake ceremony at Province of Cebu", category: "ceremonial" },
+  { id: -13, src: "/images/ceremonial/ceremonial-13.jpg", alt: "Climate Impact awareness event", category: "ceremonial" },
+  { id: -14, src: "/images/ceremonial/ceremonial-14.jpg", alt: "Team with provincial officials", category: "ceremonial" },
+  { id: -15, src: "/images/ceremonial/ceremonial-15.jpg", alt: "Sustainability workshop ceremony", category: "ceremonial" },
+  { id: -16, src: "/images/ceremonial/ceremonial-16.jpg", alt: "National Adaptation Plan workshop", category: "ceremonial" },
 ];
 
-const tabs = ["All", "Ceremonial", "Residential", "Commercial", "Before & After"];
+function useGalleryPhotos() {
+  return useQuery<GalleryPhoto[]>({
+    queryKey: ["gallery"],
+    queryFn: async () => {
+      const res = await fetch("/api/gallery");
+      if (!res.ok) throw new Error("Failed to fetch gallery");
+      const data = await res.json();
+      return data.photos || [];
+    },
+  });
+}
+
+const tabs = ["All", "Ceremonial", "Installation", "Team", "Products", "Events"];
 
 export default function GalleryPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [lightbox, setLightbox] = useState<number | null>(null);
+  const { data: apiPhotos } = useGalleryPhotos();
 
-  const filteredImages = activeTab === "All" || activeTab === "Ceremonial"
-    ? ceremonialImages
-    : [];
+  const allPhotos = apiPhotos ? [...staticCeremonialImages, ...apiPhotos] : staticCeremonialImages;
+
+  const filteredImages = activeTab === "All"
+    ? allPhotos
+    : allPhotos.filter(p =>
+        p.category.toLowerCase() === activeTab.toLowerCase() ||
+        (activeTab === "Ceremonial" && p.category.toLowerCase() === "ceremonial")
+      );
 
   const showCeremonial = activeTab === "All" || activeTab === "Ceremonial";
 
   const openLightbox = (index: number) => setLightbox(index);
   const closeLightbox = () => setLightbox(null);
-  const prevImage = () => setLightbox((prev) => (prev === null ? null : prev === 0 ? ceremonialImages.length - 1 : prev - 1));
-  const nextImage = () => setLightbox((prev) => (prev === null ? null : prev === ceremonialImages.length - 1 ? 0 : prev + 1));
+  const prevImage = () => setLightbox((prev) => (prev === null ? null : prev === 0 ? filteredImages.length - 1 : prev - 1));
+  const nextImage = () => setLightbox((prev) => (prev === null ? null : prev === filteredImages.length - 1 ? 0 : prev + 1));
 
   return (
     <div className="w-full overflow-hidden">
@@ -128,10 +154,10 @@ export default function GalleryPage() {
                     </div>
                     <div>
                       <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                        Ceremonial Pictures by the TEAM
+                        {activeTab === "All" ? "All Photos" : `${activeTab} Photos`}
                       </h2>
                       <p className="text-sm text-muted-foreground">
-                        {ceremonialImages.length} photos — official events, trade shows, and ceremonies
+                        {filteredImages.length} photos {activeTab === "All" ? "" : `— ${activeTab.toLowerCase()}`}
                       </p>
                     </div>
                   </div>
@@ -146,9 +172,9 @@ export default function GalleryPage() {
                   variants={stagger}
                   className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
                 >
-                  {ceremonialImages.map((img, i) => (
+                  {filteredImages.map((img, i) => (
                     <motion.div
-                      key={img.src}
+                      key={`${img.id}-${i}`}
                       variants={fadeInUp}
                       className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
                       onClick={() => openLightbox(i)}
@@ -171,8 +197,8 @@ export default function GalleryPage() {
             )}
           </AnimatePresence>
 
-          {/* Coming soon for other tabs */}
-          {activeTab !== "All" && activeTab !== "Ceremonial" && (
+          {/* Empty state */}
+          {activeTab !== "All" && activeTab !== "Ceremonial" && filteredImages.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -182,13 +208,13 @@ export default function GalleryPage() {
                 <ImagePlus className="w-8 h-8 text-primary" />
               </div>
               <h3 className="text-xl font-bold text-foreground mb-3">
-                {activeTab} Gallery Coming Soon
+                No {activeTab} photos yet
               </h3>
               <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-                We are uploading photos of our {activeTab.toLowerCase()} solar installations. Check back soon to see Philin Solar's work across Luzon, Visayas, and Mindanao.
+                We are uploading photos of our {activeTab.toLowerCase()} work. Check back soon!
               </p>
               <Button asChild className="rounded-full px-8">
-                <Link href="/contact">Contact Us in the Meantime</Link>
+                <Link href="/contact">Contact Us</Link>
               </Button>
             </motion.div>
           )}
@@ -236,8 +262,8 @@ export default function GalleryPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              src={ceremonialImages[lightbox].src}
-              alt={ceremonialImages[lightbox].alt}
+              src={filteredImages[lightbox].src}
+              alt={filteredImages[lightbox].alt}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}
             />
@@ -245,7 +271,7 @@ export default function GalleryPage() {
             {/* Caption */}
             <div className="absolute bottom-4 left-0 right-0 text-center">
               <p className="text-white/80 text-sm bg-black/40 inline-block px-4 py-2 rounded-full">
-                {ceremonialImages[lightbox].alt}
+                {filteredImages[lightbox].alt}
               </p>
             </div>
           </motion.div>
