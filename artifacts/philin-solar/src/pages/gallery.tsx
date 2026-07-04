@@ -1,7 +1,8 @@
-import { motion } from "framer-motion";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, Video } from "lucide-react";
+import { ImagePlus, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -10,12 +11,45 @@ const fadeInUp = {
 
 const stagger = {
   hidden: { opacity: 0 },
-  visible: { opacity: 1, transition: { staggerChildren: 0.1 } },
+  visible: { opacity: 1, transition: { staggerChildren: 0.08 } },
 };
 
-const placeholders = Array.from({ length: 9 }, (_, i) => i + 1);
+const ceremonialImages = [
+  { src: "/images/ceremonial/ceremonial-01.jpg", alt: "Team at Climate Change Commission Philippines office" },
+  { src: "/images/ceremonial/ceremonial-02.jpg", alt: "Team at Solar & Storage Live exhibition" },
+  { src: "/images/ceremonial/ceremonial-03.jpg", alt: "Team at trade show floorplan" },
+  { src: "/images/ceremonial/ceremonial-04.jpg", alt: "Turn Over Ceremony solar water system" },
+  { src: "/images/ceremonial/ceremonial-05.jpg", alt: "Team at HYCSOLAR booth" },
+  { src: "/images/ceremonial/ceremonial-06.jpg", alt: "Team at GOODWE Tier 1 booth" },
+  { src: "/images/ceremonial/ceremonial-07.jpg", alt: "Water Philippines 2025 exhibition" },
+  { src: "/images/ceremonial/ceremonial-08.jpg", alt: "Conference networking session" },
+  { src: "/images/ceremonial/ceremonial-09.jpg", alt: "Conference with climate action partners" },
+  { src: "/images/ceremonial/ceremonial-10.jpg", alt: "Meeting with climate action leaders" },
+  { src: "/images/ceremonial/ceremonial-11.jpg", alt: "Team at formal conference event" },
+  { src: "/images/ceremonial/ceremonial-12.jpg", alt: "Handshake ceremony at Province of Cebu" },
+  { src: "/images/ceremonial/ceremonial-13.jpg", alt: "Climate Impact awareness event" },
+  { src: "/images/ceremonial/ceremonial-14.jpg", alt: "Team with provincial officials" },
+  { src: "/images/ceremonial/ceremonial-15.jpg", alt: "Sustainability workshop ceremony" },
+  { src: "/images/ceremonial/ceremonial-16.jpg", alt: "National Adaptation Plan workshop" },
+];
+
+const tabs = ["All", "Ceremonial", "Residential", "Commercial", "Before & After"];
 
 export default function GalleryPage() {
+  const [activeTab, setActiveTab] = useState("All");
+  const [lightbox, setLightbox] = useState<number | null>(null);
+
+  const filteredImages = activeTab === "All" || activeTab === "Ceremonial"
+    ? ceremonialImages
+    : [];
+
+  const showCeremonial = activeTab === "All" || activeTab === "Ceremonial";
+
+  const openLightbox = (index: number) => setLightbox(index);
+  const closeLightbox = () => setLightbox(null);
+  const prevImage = () => setLightbox((prev) => (prev === null ? null : prev === 0 ? ceremonialImages.length - 1 : prev - 1));
+  const nextImage = () => setLightbox((prev) => (prev === null ? null : prev === ceremonialImages.length - 1 ? 0 : prev + 1));
+
   return (
     <div className="w-full overflow-hidden">
       {/* Header */}
@@ -43,17 +77,17 @@ export default function GalleryPage() {
               variants={fadeInUp}
               className="text-lg text-gray-300 leading-relaxed max-w-2xl"
             >
-              Browse our completed solar installations across homes and businesses in the Philippines. Photos and videos of our work — coming soon.
+              Browse our completed solar installations, ceremonial events, and team highlights across the Philippines.
             </motion.p>
           </motion.div>
         </div>
       </section>
 
-      {/* Gallery Grid */}
+      {/* Gallery Content */}
       <section className="py-20 bg-gray-50">
         <div className="container mx-auto px-4 md:px-6">
 
-          {/* Filter tabs — ready for future content */}
+          {/* Filter tabs */}
           <motion.div
             initial="hidden"
             whileInView="visible"
@@ -61,12 +95,12 @@ export default function GalleryPage() {
             variants={fadeInUp}
             className="flex flex-wrap gap-3 justify-center mb-12"
           >
-            {["All", "Residential", "Commercial", "Before & After", "Videos"].map((tab, i) => (
+            {tabs.map((tab) => (
               <button
                 key={tab}
-                data-testid={`tab-gallery-${tab.toLowerCase().replace(/\s|&/g, "-")}`}
+                onClick={() => setActiveTab(tab)}
                 className={`px-5 py-2 rounded-full text-sm font-medium border transition-all ${
-                  i === 0
+                  activeTab === tab
                     ? "bg-primary text-white border-primary"
                     : "bg-white text-muted-foreground border-border hover:border-primary/40 hover:text-primary"
                 }`}
@@ -76,54 +110,147 @@ export default function GalleryPage() {
             ))}
           </motion.div>
 
-          {/* Placeholder Grid */}
-          <motion.div
-            initial="hidden"
-            whileInView="visible"
-            viewport={{ once: true }}
-            variants={stagger}
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-          >
-            {placeholders.map((n) => (
+          {/* Ceremonial Album */}
+          <AnimatePresence mode="wait">
+            {showCeremonial && (
               <motion.div
-                key={n}
-                variants={fadeInUp}
-                data-testid={`placeholder-gallery-${n}`}
-                className="aspect-[4/3] rounded-2xl border-2 border-dashed border-border bg-white flex flex-col items-center justify-center gap-3 text-muted-foreground hover:border-primary/40 hover:bg-primary/5 transition-all group"
+                key="ceremonial"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -20 }}
+                transition={{ duration: 0.4 }}
               >
-                {n % 4 === 0 ? (
-                  <Video className="w-10 h-10 text-muted-foreground/40 group-hover:text-primary/50 transition-colors" />
-                ) : (
-                  <ImagePlus className="w-10 h-10 text-muted-foreground/40 group-hover:text-primary/50 transition-colors" />
-                )}
-                <span className="text-sm font-medium text-muted-foreground/50">
-                  {n % 4 === 0 ? "Video coming soon" : "Photo coming soon"}
-                </span>
-              </motion.div>
-            ))}
-          </motion.div>
+                {/* Album Header */}
+                <div className="mb-10">
+                  <div className="flex items-center gap-3 mb-3">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                      <Camera className="w-5 h-5 text-primary" />
+                    </div>
+                    <div>
+                      <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                        Ceremonial Pictures by the TEAM
+                      </h2>
+                      <p className="text-sm text-muted-foreground">
+                        {ceremonialImages.length} photos — official events, trade shows, and ceremonies
+                      </p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-border w-full" />
+                </div>
 
-          {/* Coming soon message */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: 0.3 }}
-            className="mt-16 text-center p-10 rounded-2xl border border-border bg-white max-w-xl mx-auto"
-          >
-            <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
-              <ImagePlus className="w-8 h-8 text-primary" />
-            </div>
-            <h3 className="text-xl font-bold text-foreground mb-3">Gallery Coming Soon</h3>
-            <p className="text-muted-foreground text-sm leading-relaxed mb-6">
-              We are uploading photos and videos of our completed solar installations. Check back soon to see Philin Solar's work across Luzon, Visayas, and Mindanao.
-            </p>
-            <Button asChild className="rounded-full px-8">
-              <Link href="/contact">Contact Us in the Meantime</Link>
-            </Button>
-          </motion.div>
+                {/* Photo Grid */}
+                <motion.div
+                  initial="hidden"
+                  whileInView="visible"
+                  viewport={{ once: true }}
+                  variants={stagger}
+                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                >
+                  {ceremonialImages.map((img, i) => (
+                    <motion.div
+                      key={img.src}
+                      variants={fadeInUp}
+                      className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
+                      onClick={() => openLightbox(i)}
+                    >
+                      <img
+                        src={img.src}
+                        alt={img.alt}
+                        loading="lazy"
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      />
+                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-3">
+                        <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                          {img.alt}
+                        </span>
+                      </div>
+                    </motion.div>
+                  ))}
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+          {/* Coming soon for other tabs */}
+          {activeTab !== "All" && activeTab !== "Ceremonial" && (
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-8 text-center p-10 rounded-2xl border border-border bg-white max-w-xl mx-auto"
+            >
+              <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mx-auto mb-5">
+                <ImagePlus className="w-8 h-8 text-primary" />
+              </div>
+              <h3 className="text-xl font-bold text-foreground mb-3">
+                {activeTab} Gallery Coming Soon
+              </h3>
+              <p className="text-muted-foreground text-sm leading-relaxed mb-6">
+                We are uploading photos of our {activeTab.toLowerCase()} solar installations. Check back soon to see Philin Solar's work across Luzon, Visayas, and Mindanao.
+              </p>
+              <Button asChild className="rounded-full px-8">
+                <Link href="/contact">Contact Us in the Meantime</Link>
+              </Button>
+            </motion.div>
+          )}
         </div>
       </section>
+
+      {/* Lightbox */}
+      <AnimatePresence>
+        {lightbox !== null && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-black/90 flex items-center justify-center p-4"
+            onClick={closeLightbox}
+          >
+            {/* Close button */}
+            <button
+              onClick={closeLightbox}
+              className="absolute top-4 right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {/* Prev button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); prevImage(); }}
+              className="absolute left-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </button>
+
+            {/* Next button */}
+            <button
+              onClick={(e) => { e.stopPropagation(); nextImage(); }}
+              className="absolute right-4 z-50 w-10 h-10 rounded-full bg-white/10 hover:bg-white/20 flex items-center justify-center text-white transition-colors"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </button>
+
+            {/* Image */}
+            <motion.img
+              key={lightbox}
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.2 }}
+              src={ceremonialImages[lightbox].src}
+              alt={ceremonialImages[lightbox].alt}
+              className="max-w-full max-h-[85vh] object-contain rounded-lg"
+              onClick={(e) => e.stopPropagation()}
+            />
+
+            {/* Caption */}
+            <div className="absolute bottom-4 left-0 right-0 text-center">
+              <p className="text-white/80 text-sm bg-black/40 inline-block px-4 py-2 rounded-full">
+                {ceremonialImages[lightbox].alt}
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* CTA */}
       <section className="py-20 bg-primary text-white">
