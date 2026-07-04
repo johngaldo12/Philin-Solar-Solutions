@@ -83,7 +83,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Services Grid */}
-      <section className="py-24 bg-white/75 backdrop-blur-md">
+      <section className="py-24 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {services.map((service, i) => (
@@ -112,7 +112,7 @@ export default function ServicesPage() {
       </section>
 
       {/* Process Section */}
-      <section className="py-24 bg-white/80 backdrop-blur-md">
+      <section className="py-24 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div 
             initial="hidden"

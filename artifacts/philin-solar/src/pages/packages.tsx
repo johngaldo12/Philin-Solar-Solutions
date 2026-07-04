@@ -142,7 +142,7 @@ export default function PackagesPage() {
       </section>
 
       {/* Packages Grid */}
-      <section className="py-20 bg-white/75 backdrop-blur-md">
+      <section className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial="hidden"
@@ -253,7 +253,7 @@ export default function PackagesPage() {
       </section>
 
       {/* What's Always Included */}
-      <section className="py-20 bg-white/80 backdrop-blur-md">
+      <section className="py-20 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial="hidden"

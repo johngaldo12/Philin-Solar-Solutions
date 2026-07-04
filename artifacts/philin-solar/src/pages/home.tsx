@@ -61,7 +61,7 @@ export default function HomePage() {
       </section>
 
       {/* Trust Badges */}
-      <section className="py-12 bg-white/80 backdrop-blur-md border-b border-border/30">
+      <section className="py-12 bg-white/60 backdrop-blur-sm border-b border-border/30">
         <div className="container mx-auto px-4 md:px-6">
           <div className="flex flex-wrap justify-center gap-8 md:gap-16 opacity-70 grayscale">
             <div className="flex items-center gap-3 font-semibold text-lg"><ShieldCheck className="text-primary"/> SEC Registered</div>
@@ -73,7 +73,7 @@ export default function HomePage() {
       </section>
 
       {/* About Section */}
-      <section className="py-24 bg-white/80 backdrop-blur-md">
+      <section className="py-24 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <motion.div 
@@ -86,7 +86,7 @@ export default function HomePage() {
               <div className="aspect-[4/3] rounded-3xl overflow-hidden shadow-2xl relative">
                 <img src={solarCloseUpImg} alt="Solar panel close up" className="w-full h-full object-cover" />
               </div>
-              <div className="absolute -bottom-8 -right-8 bg-white/80 backdrop-blur-md p-6 rounded-2xl shadow-xl border border-border/30 hidden md:block">
+              <div className="absolute -bottom-8 -right-8 bg-white/60 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-border/30 hidden md:block">
                 <div className="flex items-center gap-4">
                   <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center text-primary">
                     <Sun className="h-8 w-8" />
@@ -144,7 +144,7 @@ export default function HomePage() {
       </section>
 
       {/* Services Overview */}
-      <section className="py-24 bg-white/75 backdrop-blur-md">
+      <section className="py-24 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div 
             initial="hidden"

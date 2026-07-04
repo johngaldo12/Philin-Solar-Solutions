@@ -57,7 +57,7 @@ export default function AboutPage() {
       </section>
 
       {/* Company Overview */}
-      <section className="py-20 bg-white/80 backdrop-blur-md">
+      <section className="py-20 bg-white/60 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial="hidden"
@@ -109,7 +109,7 @@ export default function AboutPage() {
       </section>
 
       {/* Owner / Contact Person */}
-      <section className="py-20 bg-white/75 backdrop-blur-md">
+      <section className="py-20 bg-white/50 backdrop-blur-sm">
         <div className="container mx-auto px-4 md:px-6">
           <motion.div
             initial="hidden"
