@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 // Imported Shield icon for the Admin button
-import { MapPin, Phone, Mail, Clock, Facebook, CreditCard, MessageCircle, Shield } from "lucide-react"; 
+
 import aerialSolarImg from "@/assets/images/aerial-solar.png";
 // Adjust this import depending on your framework (e.g., 'react-router-dom' if not using Next.js)
 import Link from "next/link"; 
@@ -97,10 +97,9 @@ export default function ContactPage() {
                   </Button>
                   
                   <Link href="/admin" passHref className="flex-1 sm:flex-initial">
-                    <Button type="button" variant="outline" size="lg" className="w-full h-14 text-lg rounded-xl border-dashed border-2 hover:bg-muted gap-2">
-                      <Shield className="w-5 h-5" />
+                   
                       Admin Portal
-                    </Button>
+                  
                   </Link>
                 </div>
               </form>
