@@ -1,2 +1,0 @@
-- [GitHub push rejected on new repos](github-push-rejected.md) — `PUSH_REJECTED` can happen even for owned, existing repos; check branch protection and app permissions.
-- [Cross-platform origin config](render-origins-env-var.md) — centralize CORS/trusted-origin allowlists in a single env var for deployments outside Replit.
