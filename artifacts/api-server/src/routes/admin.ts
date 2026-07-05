@@ -1,19 +1,19 @@
 import { Router, type IRouter } from "express";
-import { ADMIN_USERNAME, ADMIN_PASSWORD, requireAdmin, type AuthenticatedRequest } from "../middleware/auth";
+import { requireAdmin, validateAdminCredentials, type AuthenticatedRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 
 router.post("/admin/login", (req: AuthenticatedRequest, res) => {
   const { username, password } = req.body;
-  if (username === ADMIN_USERNAME && password === ADMIN_PASSWORD) {
-    res.cookie("admin_session", ADMIN_USERNAME, {
+  if (validateAdminCredentials(username, password)) {
+    res.cookie("admin_session", username, {
       signed: true,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
       sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24,
     });
-    res.json({ success: true, username: ADMIN_USERNAME });
+    res.json({ success: true, username });
     return;
   }
   res.status(401).json({ error: "Invalid username or password" });
@@ -26,7 +26,7 @@ router.post("/admin/logout", (req: AuthenticatedRequest, res) => {
 
 router.get("/admin/me", (req: AuthenticatedRequest, res) => {
   const sessionUser = req.signedCookies?.["admin_session"];
-  if (sessionUser === ADMIN_USERNAME) {
+  if (sessionUser) {
     res.json({ authenticated: true, username: sessionUser });
     return;
   }

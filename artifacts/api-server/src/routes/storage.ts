@@ -5,7 +5,7 @@ import {
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
-import { ObjectPermission } from "../lib/objectAcl";
+import { requireAdmin } from "../middleware/auth";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -14,19 +14,27 @@ const objectStorageService = new ObjectStorageService();
  * POST /storage/uploads/request-url
  *
  * Request a presigned URL for file upload.
- * The client sends JSON metadata (name, size, contentType) — NOT the file.
- * Then uploads the file directly to the returned presigned URL.
+ * Protected: only authenticated admins can request upload URLs.
  */
-router.post("/storage/uploads/request-url", async (req: Request, res: Response) => {
+router.post("/storage/uploads/request-url", requireAdmin, async (req: Request, res: Response) => {
   const parsed = RequestUploadUrlBody.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ error: "Missing or invalid required fields" });
     return;
   }
 
-  try {
-    const { name, size, contentType } = parsed.data;
+  // Validate file type: only images allowed for gallery uploads
+  const { name, size, contentType } = parsed.data;
+  if (!contentType.startsWith("image/")) {
+    res.status(400).json({ error: "Only image uploads are allowed" });
+    return;
+  }
+  if (size > 10 * 1024 * 1024) {
+    res.status(400).json({ error: "File size exceeds 10MB limit" });
+    return;
+  }
 
+  try {
     const uploadURL = await objectStorageService.getObjectEntityUploadURL();
     const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
 
@@ -48,7 +56,6 @@ router.post("/storage/uploads/request-url", async (req: Request, res: Response) 
  *
  * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.
  * These are unconditionally public — no authentication or ACL checks.
- * IMPORTANT: Always provide this endpoint when object storage is set up.
  */
 router.get("/storage/public-objects/*filePath", async (req: Request, res: Response) => {
   try {
@@ -81,8 +88,8 @@ router.get("/storage/public-objects/*filePath", async (req: Request, res: Respon
  * GET /storage/objects/*
  *
  * Serve object entities from PRIVATE_OBJECT_DIR.
- * These are served from a separate path from /public-objects and can optionally
- * be protected with authentication or ACL checks based on the use case.
+ * These objects are uploaded via the admin panel and are intended for public
+ * gallery display. We validate the request is same-origin to mitigate abuse.
  */
 router.get("/storage/objects/*path", async (req: Request, res: Response) => {
   try {
@@ -91,20 +98,18 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     const objectPath = `/objects/${wildcardPath}`;
     const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
 
-    // --- Protected route example (uncomment when using replit-auth) ---
-    // if (!req.isAuthenticated()) {
-    //   res.status(401).json({ error: "Unauthorized" });
-    //   return;
-    // }
-    // const canAccess = await objectStorageService.canAccessObjectEntity({
-    //   userId: req.user.id,
-    //   objectFile,
-    //   requestedPermission: ObjectPermission.READ,
-    // });
-    // if (!canAccess) {
-    //   res.status(403).json({ error: "Forbidden" });
-    //   return;
-    // }
+    // Validate same-origin or referer to prevent hotlinking from untrusted sites
+    const origin = req.headers.origin || req.headers.referer || "";
+    const allowedPrefixes = [
+      `https://${process.env.REPLIT_DEV_DOMAIN || ""}`,
+      `http://${process.env.REPLIT_DEV_DOMAIN || ""}`,
+    ];
+    const isLocal = !origin || origin.includes("localhost");
+    const isAllowed = isLocal || allowedPrefixes.some(p => origin.startsWith(p));
+    if (!isAllowed && origin) {
+      res.status(403).json({ error: "Forbidden" });
+      return;
+    }
 
     const response = await objectStorageService.downloadObject(objectFile);
 
