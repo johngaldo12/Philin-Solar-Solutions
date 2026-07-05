@@ -3,11 +3,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-// Imported Shield icon for the Admin button
-
+import { MapPin, Phone, Mail, Clock, Facebook, CreditCard, MessageCircle } from "lucide-react";
 import aerialSolarImg from "@/assets/images/aerial-solar.png";
-// Adjust this import depending on your framework (e.g., 'react-router-dom' if not using Next.js)
-import Link from "next/link"; 
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -90,18 +87,9 @@ export default function ContactPage() {
                   <Textarea id="message" placeholder="How can we help you?" className="min-h-[150px] resize-none" />
                 </div>
 
-                {/* Updated Button Group */}
-                <div className="flex flex-col sm:flex-row gap-4 pt-2">
-                  <Button type="submit" size="lg" className="flex-1 h-14 text-lg rounded-xl">
-                    Send Message
-                  </Button>
-                  
-                  <Link href="/admin" passHref className="flex-1 sm:flex-initial">
-                   
-                      Admin Portal
-                  
-                  </Link>
-                </div>
+                <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-xl">
+                  Send Message
+                </Button>
               </form>
             </motion.div>
 
