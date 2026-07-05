@@ -1,36 +1,42 @@
-# [Project name]
+# Philin Solar Solutions
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A business website for Philin Solar, a solar energy services provider. Includes a public-facing site (home, about, services, packages, gallery, news, contact) and an admin dashboard for managing news posts and gallery photos.
 
 ## Run & Operate
 
-- `pnpm --filter @workspace/api-server run dev` — run the API server (port 5000)
+- `PORT=8080 pnpm --filter @workspace/api-server run dev` — run the API server (port 8080)
+- `PORT=19063 BASE_PATH=/ pnpm --filter @workspace/philin-solar run dev` — run the frontend (port 19063)
+- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
 - `pnpm run typecheck` — full typecheck across all packages
 - `pnpm run build` — typecheck + build all packages
-- `pnpm --filter @workspace/api-spec run codegen` — regenerate API hooks and Zod schemas from the OpenAPI spec
-- `pnpm --filter @workspace/db run push` — push DB schema changes (dev only)
-- Required env: `DATABASE_URL` — Postgres connection string
+
+## Required Secrets (set in Secrets panel)
+
+- `SESSION_SECRET` — signs admin session cookies; app refuses to start without it ✓ already set
+- `ADMIN_USERNAME` — admin login username
+- `ADMIN_PASSWORD` — admin login password
 
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
-- API: Express 5
+- Frontend: React 19 + Vite 7 + Tailwind CSS v4 + shadcn/ui
+- API: Express 5, port 8080
 - DB: PostgreSQL + Drizzle ORM
-- Validation: Zod (`zod/v4`), `drizzle-zod`
-- API codegen: Orval (from OpenAPI spec)
-- Build: esbuild (CJS bundle)
+- Auth: signed cookies via `cookie-parser`
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/philin-solar/src/` — React frontend (pages, components, routing via wouter)
+- `artifacts/api-server/src/` — Express API (routes: `/api/admin`, `/api/news`, `/api/gallery`)
+- `lib/db/src/schema/` — Drizzle ORM schema (`news_posts`, `gallery_photos` tables)
+- `lib/db/drizzle.config.ts` — Drizzle config (reads `DATABASE_URL` from env)
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
-
-## Product
-
-_Describe the high-level user-facing capabilities of this app once they exist._
+- `DATABASE_URL` is runtime-managed by Replit — never set manually
+- Admin auth uses signed cookies; `SESSION_SECRET` is validated at startup
+- `ADMIN_USERNAME` and `ADMIN_PASSWORD` are required env vars — app refuses to start if missing
+- Vite config uses `server.allowedHosts: true` for Replit's proxied iframe environment
 
 ## User preferences
 
@@ -38,8 +44,5 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 ## Gotchas
 
-_Populate as you build — sharp edges, "always run X before Y" rules._
-
-## Pointers
-
-- See the `pnpm-workspace` skill for workspace structure, TypeScript setup, and package details
+- Both `PORT` and `BASE_PATH` must be passed when starting the philin-solar Vite dev server
+- The api-server `dev` script runs a build step before starting — expect ~5s startup
