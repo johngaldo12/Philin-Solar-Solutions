@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { apiUrl } from "@/lib/api";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { ArrowLeft, Save, Eye, Loader2, ImagePlus, X, Upload } from "lucide-react";
@@ -46,7 +47,7 @@ export default function NewsEditorPage() {
   const { data: existingPost } = useQuery<NewsPost>({
     queryKey: ["news", postId],
     queryFn: async () => {
-      const res = await fetch(`/api/news/${postId}`);
+      const res = await fetch(apiUrl(`/api/news/${postId}`));
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       return data.post;
@@ -101,7 +102,7 @@ export default function NewsEditorPage() {
 
   async function uploadImage(file: File): Promise<string> {
     // Step 1: Request presigned URL
-    const urlRes = await fetch("/api/storage/uploads/request-url", {
+    const urlRes = await fetch(apiUrl("/api/storage/uploads/request-url"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -119,7 +120,7 @@ export default function NewsEditorPage() {
     });
     if (!gcsRes.ok) throw new Error("Failed to upload image to storage");
 
-    return `/api/storage${objectPath}`;
+    return apiUrl(`/api/storage${objectPath}`);
   }
 
   async function handleSave() {
@@ -146,7 +147,7 @@ export default function NewsEditorPage() {
       }
 
       if (isNew) {
-        const res = await fetch("/api/admin/news", {
+        const res = await fetch(apiUrl("/api/admin/news"), {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -154,7 +155,7 @@ export default function NewsEditorPage() {
         });
         if (!res.ok) throw new Error("Failed to create");
       } else if (postId) {
-        const res = await fetch(`/api/admin/news/${postId}`, {
+        const res = await fetch(apiUrl(`/api/admin/news/${postId}`), {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",

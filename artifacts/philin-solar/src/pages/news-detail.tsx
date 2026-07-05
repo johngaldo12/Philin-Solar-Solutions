@@ -1,4 +1,5 @@
 import { useRoute, useLocation } from "wouter";
+import { apiUrl } from "@/lib/api";
 import { ArrowLeft, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -22,7 +23,7 @@ export default function NewsDetailPage() {
   const { data: post, isLoading } = useQuery<NewsPost>({
     queryKey: ["news", postId],
     queryFn: async () => {
-      const res = await fetch(`/api/news/${postId}`);
+      const res = await fetch(apiUrl(`/api/news/${postId}`));
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       return data.post;
