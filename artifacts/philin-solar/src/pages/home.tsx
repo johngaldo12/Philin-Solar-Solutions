@@ -41,7 +41,7 @@ export default function HomePage() {
           >
             <motion.div variants={fadeInUp} className="inline-block mb-4 px-3 py-1 bg-primary/10 text-primary rounded-full text-sm font-semibold tracking-wide border border-primary/20">
               Government Accredited Solar Contractor
-              TEST TEST
+                <Link href="/admin">TEST TEST</Link> 
             </motion.div>
             <motion.h1 variants={fadeInUp} className="text-5xl md:text-7xl font-bold tracking-tight text-foreground leading-[1.1] mb-6">
               Powering the Philippines, <br/><span className="text-primary">One Roof at a Time.</span>
