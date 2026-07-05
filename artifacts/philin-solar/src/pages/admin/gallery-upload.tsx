@@ -41,7 +41,7 @@ export default function GalleryUploadPage() {
     setUploading(true);
     try {
       // Request presigned URL
-      const res = await fetch("/api/storage/uploads/request-url", {
+      const urlRes = await fetch("/api/storage/uploads/request-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -51,14 +51,17 @@ export default function GalleryUploadPage() {
           contentType: file.type,
         }),
       });
-      const { uploadURL, objectPath } = await res.json();
+      if (!urlRes.ok) throw new Error("Failed to get upload URL");
+      const { uploadURL, objectPath } = await urlRes.json();
+      if (!uploadURL || !objectPath) throw new Error("Invalid upload URL response");
 
       // Upload directly to GCS
-      await fetch(uploadURL, {
+      const gcsRes = await fetch(uploadURL, {
         method: "PUT",
         headers: { "Content-Type": file.type },
         body: file,
       });
+      if (!gcsRes.ok) throw new Error("Failed to upload to storage");
 
       // Save photo record
       const servingUrl = `/api/storage${objectPath}`;

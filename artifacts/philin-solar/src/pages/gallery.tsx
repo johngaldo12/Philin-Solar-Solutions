@@ -64,12 +64,7 @@ export default function GalleryPage() {
 
   const filteredImages = activeTab === "All"
     ? allPhotos
-    : allPhotos.filter(p =>
-        p.category.toLowerCase() === activeTab.toLowerCase() ||
-        (activeTab === "Ceremonial" && p.category.toLowerCase() === "ceremonial")
-      );
-
-  const showCeremonial = activeTab === "All" || activeTab === "Ceremonial";
+    : allPhotos.filter(p => p.category.toLowerCase() === activeTab.toLowerCase());
 
   const openLightbox = (index: number) => setLightbox(index);
   const closeLightbox = () => setLightbox(null);
@@ -136,69 +131,71 @@ export default function GalleryPage() {
             ))}
           </motion.div>
 
-          {/* Ceremonial Album */}
+          {/* Photo Grid */}
           <AnimatePresence mode="wait">
-            {showCeremonial && (
-              <motion.div
-                key="ceremonial"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -20 }}
-                transition={{ duration: 0.4 }}
-              >
-                {/* Album Header */}
-                <div className="mb-10">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                      <Camera className="w-5 h-5 text-primary" />
-                    </div>
-                    <div>
-                      <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                        {activeTab === "All" ? "All Photos" : `${activeTab} Photos`}
-                      </h2>
-                      <p className="text-sm text-muted-foreground">
-                        {filteredImages.length} photos {activeTab === "All" ? "" : `— ${activeTab.toLowerCase()}`}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="h-px bg-border w-full" />
-                </div>
-
-                {/* Photo Grid */}
-                <motion.div
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ once: true }}
-                  variants={stagger}
-                  className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-                >
-                  {filteredImages.map((img, i) => (
-                    <motion.div
-                      key={`${img.id}-${i}`}
-                      variants={fadeInUp}
-                      className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
-                      onClick={() => openLightbox(i)}
-                    >
-                      <img
-                        src={img.src}
-                        alt={img.alt}
-                        loading="lazy"
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-3">
-                        <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
-                          {img.alt}
-                        </span>
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
+            >
+              {filteredImages.length > 0 && (
+                <>
+                  {/* Album Header */}
+                  <div className="mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera className="w-5 h-5 text-primary" />
                       </div>
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </motion.div>
-            )}
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                          {activeTab === "All" ? "All Photos" : `${activeTab} Photos`}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {filteredImages.length} photos {activeTab !== "All" ? `— ${activeTab.toLowerCase()}` : ""}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="h-px bg-border w-full" />
+                  </div>
+
+                  {/* Photo Grid */}
+                  <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={stagger}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                  >
+                    {filteredImages.map((img, i) => (
+                      <motion.div
+                        key={`${img.id}-${i}`}
+                        variants={fadeInUp}
+                        className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
+                        onClick={() => openLightbox(i)}
+                      >
+                        <img
+                          src={img.src}
+                          alt={img.alt}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-3">
+                          <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                            {img.alt}
+                          </span>
+                        </div>
+                      </motion.div>
+                    ))}
+                  </motion.div>
+                </>
+              )}
+            </motion.div>
           </AnimatePresence>
 
           {/* Empty state */}
-          {activeTab !== "All" && activeTab !== "Ceremonial" && filteredImages.length === 0 && (
+          {filteredImages.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
