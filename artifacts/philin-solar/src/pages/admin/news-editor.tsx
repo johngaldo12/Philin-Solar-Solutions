@@ -1,13 +1,13 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation, useRoute } from "wouter";
 import { useAuth } from "@/context/auth-context";
-import { ArrowLeft, Save, Eye, Loader2 } from "lucide-react";
+import { ArrowLeft, Save, Eye, Loader2, ImagePlus, X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface NewsPost {
   id: number;
@@ -36,6 +36,13 @@ export default function NewsEditorPage() {
   const [saving, setSaving] = useState(false);
   const [preview, setPreview] = useState(false);
 
+  // Image upload state
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+
   const { data: existingPost } = useQuery<NewsPost>({
     queryKey: ["news", postId],
     queryFn: async () => {
@@ -60,6 +67,10 @@ export default function NewsEditorPage() {
       setExcerpt(existingPost.excerpt || "");
       setContent(existingPost.content);
       setImageUrl(existingPost.imageUrl || "");
+      // Always sync preview to the saved URL (or clear it) so state never drifts
+      setImagePreview(existingPost.imageUrl ?? null);
+      setImageFile(null);
+      if (fileInputRef.current) fileInputRef.current.value = "";
       setIsPublished(existingPost.isPublished);
     }
   }, [existingPost]);
@@ -70,16 +81,76 @@ export default function NewsEditorPage() {
     }
   }, [title]);
 
+  function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const selected = e.target.files?.[0];
+    if (!selected) return;
+    setImageFile(selected);
+    setUploadError(null);
+    const reader = new FileReader();
+    reader.onload = () => setImagePreview(reader.result as string);
+    reader.readAsDataURL(selected);
+  }
+
+  function handleRemoveImage() {
+    setImageFile(null);
+    setImagePreview(null);
+    setImageUrl("");
+    setUploadError(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  }
+
+  async function uploadImage(file: File): Promise<string> {
+    // Step 1: Request presigned URL
+    const urlRes = await fetch("/api/storage/uploads/request-url", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ name: file.name, size: file.size, contentType: file.type }),
+    });
+    if (!urlRes.ok) throw new Error("Failed to get upload URL");
+    const { uploadURL, objectPath } = await urlRes.json();
+    if (!uploadURL || !objectPath) throw new Error("Invalid upload URL response");
+
+    // Step 2: Upload to GCS
+    const gcsRes = await fetch(uploadURL, {
+      method: "PUT",
+      headers: { "Content-Type": file.type },
+      body: file,
+    });
+    if (!gcsRes.ok) throw new Error("Failed to upload image to storage");
+
+    return `/api/storage${objectPath}`;
+  }
+
   async function handleSave() {
     if (!title.trim() || !content.trim()) return;
     setSaving(true);
+    setUploadError(null);
     try {
+      let finalImageUrl = imageUrl;
+
+      // If a new file was selected but not yet uploaded, upload it now
+      if (imageFile) {
+        setUploadingImage(true);
+        try {
+          finalImageUrl = await uploadImage(imageFile);
+          setImageUrl(finalImageUrl);
+          setImageFile(null);
+        } catch (e) {
+          setUploadError("Image upload failed. Please try again.");
+          setSaving(false);
+          setUploadingImage(false);
+          return;
+        }
+        setUploadingImage(false);
+      }
+
       if (isNew) {
         const res = await fetch("/api/admin/news", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ title, slug, excerpt: excerpt || null, content, imageUrl: imageUrl || null }),
+          body: JSON.stringify({ title, slug, excerpt: excerpt || null, content, imageUrl: finalImageUrl || null }),
         });
         if (!res.ok) throw new Error("Failed to create");
       } else if (postId) {
@@ -87,7 +158,7 @@ export default function NewsEditorPage() {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
-          body: JSON.stringify({ title, slug, excerpt: excerpt || null, content, imageUrl: imageUrl || null, isPublished }),
+          body: JSON.stringify({ title, slug, excerpt: excerpt || null, content, imageUrl: finalImageUrl || null, isPublished }),
         });
         if (!res.ok) throw new Error("Failed to update");
       }
@@ -103,6 +174,8 @@ export default function NewsEditorPage() {
 
   if (authLoading) return null;
   if (!isAuthenticated) return null;
+
+  const isBusy = saving || uploadingImage;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -120,9 +193,9 @@ export default function NewsEditorPage() {
               <Eye className="w-4 h-4 mr-2" />
               {preview ? "Edit" : "Preview"}
             </Button>
-            <Button size="sm" onClick={handleSave} disabled={saving || !title.trim() || !content.trim()}>
-              {saving ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-              {saving ? "Saving..." : "Save"}
+            <Button size="sm" onClick={handleSave} disabled={isBusy || !title.trim() || !content.trim()}>
+              {isBusy ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
+              {uploadingImage ? "Uploading image..." : saving ? "Saving..." : "Save"}
             </Button>
           </div>
         </div>
@@ -131,7 +204,9 @@ export default function NewsEditorPage() {
       <div className="container mx-auto px-4 py-8">
         {preview ? (
           <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8">
-            {imageUrl && <img src={imageUrl} alt={title} className="w-full h-64 object-cover rounded-lg mb-6" />}
+            {(imagePreview || imageUrl) && (
+              <img src={imagePreview || imageUrl} alt={title} className="w-full h-64 object-cover rounded-lg mb-6" />
+            )}
             <h1 className="text-3xl font-bold mb-4">{title}</h1>
             {excerpt && <p className="text-lg text-muted-foreground mb-6 italic">{excerpt}</p>}
             <div className="prose max-w-none whitespace-pre-wrap">{content}</div>
@@ -155,10 +230,48 @@ export default function NewsEditorPage() {
                 <Label htmlFor="content">Content</Label>
                 <Textarea id="content" value={content} onChange={(e) => setContent(e.target.value)} placeholder="Write your post content here..." rows={12} />
               </div>
+
+              {/* Cover Image Upload */}
               <div className="space-y-2">
-                <Label htmlFor="imageUrl">Cover Image URL (optional)</Label>
-                <Input id="imageUrl" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} placeholder="https://..." />
+                <Label>Cover Image (optional)</Label>
+                {imagePreview ? (
+                  <div className="relative rounded-xl overflow-hidden border border-muted">
+                    <img src={imagePreview} alt="Cover preview" className="w-full h-48 object-cover" />
+                    <button
+                      type="button"
+                      onClick={handleRemoveImage}
+                      className="absolute top-2 right-2 w-7 h-7 bg-black/60 hover:bg-black/80 text-white rounded-full flex items-center justify-center transition-colors"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                    {imageFile && (
+                      <div className="absolute bottom-2 left-2 bg-black/60 text-white text-xs px-2 py-1 rounded">
+                        Ready to upload on save
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border-2 border-dashed border-muted-foreground/25 rounded-xl p-8 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 transition-colors"
+                  >
+                    <ImagePlus className="w-8 h-8 text-muted-foreground mb-2" />
+                    <p className="text-sm text-muted-foreground font-medium">Click to select a cover image</p>
+                    <p className="text-xs text-muted-foreground mt-1">JPG, PNG, WEBP up to 10MB</p>
+                  </div>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileSelect}
+                />
+                {uploadError && (
+                  <p className="text-sm text-red-500">{uploadError}</p>
+                )}
               </div>
+
               {!isNew && (
                 <div className="flex items-center gap-3">
                   <Switch id="published" checked={isPublished} onCheckedChange={setIsPublished} />
