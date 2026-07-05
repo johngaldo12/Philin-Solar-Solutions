@@ -3,8 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { MapPin, Phone, Mail, Clock, Facebook, CreditCard, MessageCircle } from "lucide-react";
+// Imported Shield icon for the Admin button
+import { MapPin, Phone, Mail, Clock, Facebook, CreditCard, MessageCircle, Shield } from "lucide-react"; 
 import aerialSolarImg from "@/assets/images/aerial-solar.png";
+// Adjust this import depending on your framework (e.g., 'react-router-dom' if not using Next.js)
+import Link from "next/link"; 
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -87,9 +90,19 @@ export default function ContactPage() {
                   <Textarea id="message" placeholder="How can we help you?" className="min-h-[150px] resize-none" />
                 </div>
 
-                <Button type="submit" size="lg" className="w-full h-14 text-lg rounded-xl">
-                  Send Message
-                </Button>
+                {/* Updated Button Group */}
+                <div className="flex flex-col sm:flex-row gap-4 pt-2">
+                  <Button type="submit" size="lg" className="flex-1 h-14 text-lg rounded-xl">
+                    Send Message
+                  </Button>
+                  
+                  <Link href="/admin" passHref className="flex-1 sm:flex-initial">
+                    <Button type="button" variant="outline" size="lg" className="w-full h-14 text-lg rounded-xl border-dashed border-2 hover:bg-muted gap-2">
+                      <Shield className="w-5 h-5" />
+                      Admin Portal
+                    </Button>
+                  </Link>
+                </div>
               </form>
             </motion.div>
 
