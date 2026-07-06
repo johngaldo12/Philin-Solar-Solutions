@@ -1,5 +1,5 @@
 import { Link, useLocation } from "wouter";
-import { Menu, X, Phone, Mail, MapPin } from "lucide-react";
+import { Menu, X, Phone, Mail, MapPin, Lock } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { PageBackground } from "@/components/page-background";
@@ -63,6 +63,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <Button asChild className="ml-4 rounded-full px-6">
               <Link href="/contact">Get a Quote</Link>
             </Button>
+            <Button asChild variant="outline" size="icon" className="ml-2 rounded-full" aria-label="Admin login">
+              <Link href="/admin/login"><Lock className="h-4 w-4" /></Link>
+            </Button>
           </nav>
 
           {/* Mobile Menu Toggle */}
@@ -92,6 +95,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <div className="p-6">
                 <Button asChild className="w-full rounded-full">
                   <Link href="/contact">Get a Quote</Link>
+                </Button>
+                <Button asChild variant="outline" className="w-full rounded-full mt-3">
+                  <Link href="/admin/login"><Lock className="h-4 w-4 mr-2" /> Admin Login</Link>
                 </Button>
               </div>
             </nav>
