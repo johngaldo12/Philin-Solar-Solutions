@@ -35,3 +35,10 @@ channel = "stable-25_05"
 
 [objectStorage]
 defaultBucketID = "replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc"
+
+[userenv]
+
+[userenv.production]
+PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc/public"
+PRIVATE_OBJECT_DIR = "/replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc/.private"
+DEFAULT_OBJECT_STORAGE_BUCKET_ID = "replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc"
