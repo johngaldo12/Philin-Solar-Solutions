@@ -25,6 +25,14 @@ for (const d of rawDomains.split(",")) {
 allowedOrigins.add("http://localhost");
 allowedOrigins.add("http://localhost:80");
 
+// Render (or other external frontend origins)
+const appFrontendOrigins = process.env["APP_FRONTEND_ORIGINS"] || "";
+for (const o of appFrontendOrigins.split(",")) {
+  const trimmed = o.trim();
+  if (!trimmed) continue;
+  allowedOrigins.add(trimmed);
+}
+
 const corsOrigin = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
   if (!origin || allowedOrigins.has(origin)) {
     callback(null, true);
