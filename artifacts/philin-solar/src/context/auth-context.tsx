@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { apiUrl } from "@/lib/api";
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -18,7 +17,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const checkAuth = useCallback(async () => {
     try {
-      const res = await fetch(apiUrl("/api/admin/me"), { credentials: "include" });
+      const res = await fetch("/api/admin/me", { credentials: "include" });
       const data = await res.json();
       if (data.authenticated) {
         setIsAuthenticated(true);
@@ -40,7 +39,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [checkAuth]);
 
   const login = useCallback(async (username: string, password: string) => {
-    const res = await fetch(apiUrl("/api/admin/login"), {
+    const res = await fetch("/api/admin/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -56,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const logout = useCallback(async () => {
-    await fetch(apiUrl("/api/admin/logout"), {
+    await fetch("/api/admin/logout", {
       method: "POST",
       credentials: "include",
     });

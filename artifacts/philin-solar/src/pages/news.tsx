@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { apiUrl } from "@/lib/api";
 import { Link } from "wouter";
 import { Calendar, ArrowRight, Newspaper } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
@@ -19,7 +18,7 @@ function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["news"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/news"));
+      const res = await fetch("/api/news");
       if (!res.ok) throw new Error("Failed to fetch news");
       const data = await res.json();
       return data.posts || [];

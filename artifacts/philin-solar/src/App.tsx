@@ -26,10 +26,10 @@ function Router() {
   return (
     <Switch>
       <Route path="/admin/login" component={AdminLoginPage} />
+      <Route path="/admin" component={AdminDashboard} />
       <Route path="/admin/news/new" component={NewsEditorPage} />
       <Route path="/admin/news/edit/:id" component={NewsEditorPage} />
       <Route path="/admin/gallery/upload" component={GalleryUploadPage} />
-      <Route path="/admin" component={AdminDashboard} />
       <Route>
         <Layout>
           <Switch>

@@ -1,4 +1,5 @@
 uploads = []
+outputs = []
 
 [[generated]]
 id = "mv_iw8ol3oNDZE2dEJgIP"
@@ -23,15 +24,3 @@ id = "UkQ_mtuOiBWYkELCq9YIA"
 uri = "file://artifacts/philin-solar/src/assets/images/aerial-solar.png"
 type = "image"
 title = "Aerial solar array"
-
-[[outputs]]
-id = "fH4AlF7tTBjrlAwErx3Ke"
-uri = "file://screenshots/admin_route_latest.jpg"
-type = "image"
-title = "Admin route latest screenshot"
-
-[[outputs]]
-id = "ZD0Xb3KnM4zCkKgmlKZlu"
-uri = "file://screenshots/admin_route_final.jpg"
-type = "image"
-title = "Admin route current state"

@@ -104,9 +104,8 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
       `https://${process.env.REPLIT_DEV_DOMAIN || ""}`,
       `http://${process.env.REPLIT_DEV_DOMAIN || ""}`,
     ];
-    const appFrontendOrigins = (process.env.APP_FRONTEND_ORIGINS || "").split(",").map(o => o.trim()).filter(Boolean);
     const isLocal = !origin || origin.includes("localhost");
-    const isAllowed = isLocal || allowedPrefixes.some(p => origin.startsWith(p)) || appFrontendOrigins.some(o => origin.startsWith(o));
+    const isAllowed = isLocal || allowedPrefixes.some(p => origin.startsWith(p));
     if (!isAllowed && origin) {
       res.status(403).json({ error: "Forbidden" });
       return;

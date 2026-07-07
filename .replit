@@ -9,6 +9,44 @@ args = ["pnpm", "store", "prune"]
 env = { "CI" = "true" }
 
 [workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "API Server"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Philin Solar"
+
+[[workflows.workflow]]
+name = "API Server"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "console"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=8080 pnpm --filter @workspace/api-server run dev"
+waitForPort = 8080
+
+[[workflows.workflow]]
+name = "Philin Solar"
+author = "agent"
+
+[workflows.workflow.metadata]
+outputType = "webview"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "PORT=19063 BASE_PATH=/ pnpm --filter @workspace/philin-solar run dev"
+waitForPort = 19063
 
 [agent]
 stack = "PNPM_WORKSPACE"
@@ -32,13 +70,3 @@ externalPort = 80
 
 [nix]
 channel = "stable-25_05"
-
-[objectStorage]
-defaultBucketID = "replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc"
-
-[userenv]
-
-[userenv.production]
-PUBLIC_OBJECT_SEARCH_PATHS = "/replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc/public"
-PRIVATE_OBJECT_DIR = "/replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc/.private"
-DEFAULT_OBJECT_STORAGE_BUCKET_ID = "replit-objstore-be0e062d-f62c-4bad-abd4-29bd90ea7cbc"

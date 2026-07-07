@@ -1,5 +1,4 @@
 import { useState, useRef, useEffect } from "react";
-import { apiUrl } from "@/lib/api";
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/auth-context";
 import { ArrowLeft, Upload, Loader2, ImagePlus, X } from "lucide-react";
@@ -42,7 +41,7 @@ export default function GalleryUploadPage() {
     setUploading(true);
     try {
       // Request presigned URL
-      const urlRes = await fetch(apiUrl("/api/storage/uploads/request-url"), {
+      const urlRes = await fetch("/api/storage/uploads/request-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -65,8 +64,8 @@ export default function GalleryUploadPage() {
       if (!gcsRes.ok) throw new Error("Failed to upload to storage");
 
       // Save photo record
-      const servingUrl = apiUrl(`/api/storage${objectPath}`);
-      const saveRes = await fetch(apiUrl("/api/admin/gallery"), {
+      const servingUrl = `/api/storage${objectPath}`;
+      const saveRes = await fetch("/api/admin/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

@@ -1,5 +1,4 @@
 import { useLocation } from "wouter";
-import { apiUrl } from "@/lib/api";
 import { useAuth } from "@/context/auth-context";
 import { Newspaper, Image, LogOut, LayoutDashboard, Plus, Edit3, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -32,7 +31,7 @@ function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["admin-news"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/admin/news"), { credentials: "include" });
+      const res = await fetch("/api/admin/news", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch news");
       const data = await res.json();
       return data.posts || [];
@@ -44,7 +43,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["admin-gallery"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/admin/gallery"), { credentials: "include" });
+      const res = await fetch("/api/admin/gallery", { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
@@ -122,7 +121,7 @@ function NewsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(apiUrl(`/api/admin/news/${id}`), {
+      const res = await fetch(`/api/admin/news/${id}`, {
         method: "DELETE",
         credentials: "include",
       });
@@ -188,7 +187,7 @@ function GalleryManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(apiUrl(`/api/admin/gallery/${id}`), {
+      const res = await fetch(`/api/admin/gallery/${id}`, {
         method: "DELETE",
         credentials: "include",
       });

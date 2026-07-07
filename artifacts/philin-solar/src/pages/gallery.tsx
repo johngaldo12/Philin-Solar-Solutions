@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { apiUrl } from "@/lib/api";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
@@ -46,7 +45,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["gallery"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/gallery"));
+      const res = await fetch("/api/gallery");
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
