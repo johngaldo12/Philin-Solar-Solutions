@@ -4,26 +4,15 @@ import pinoHttp from "pino-http";
 import cookieParser from "cookie-parser";
 import router from "./routes";
 import { logger } from "./lib/logger";
+import { getAllowedOrigins, validateAppFrontendOrigins } from "./lib/cors";
 
 const app: Express = express();
 
-// --- CORS: lock to known Replit origins only ---
-const rawDomains = process.env["REPLIT_DOMAINS"] || "";
-const devDomain = process.env["REPLIT_DEV_DOMAIN"] || "";
-const allowedOrigins = new Set<string>();
-if (devDomain) {
-  allowedOrigins.add(`https://${devDomain}`);
-  allowedOrigins.add(`http://${devDomain}`);
-}
-for (const d of rawDomains.split(",")) {
-  const trimmed = d.trim();
-  if (!trimmed) continue;
-  allowedOrigins.add(`https://${trimmed}`);
-  allowedOrigins.add(`http://${trimmed}`);
-}
-// Localhost for dev testing
-allowedOrigins.add("http://localhost");
-allowedOrigins.add("http://localhost:80");
+// Validate custom origins early so misconfiguration fails fast
+validateAppFrontendOrigins();
+
+// --- CORS: lock to known Replit origins plus any custom frontend origins ---
+const allowedOrigins = getAllowedOrigins();
 
 const corsOrigin = (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) => {
   if (!origin || allowedOrigins.has(origin)) {

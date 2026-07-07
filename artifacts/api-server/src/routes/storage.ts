@@ -6,6 +6,7 @@ import {
 } from "@workspace/api-zod";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
 import { requireAdmin } from "../middleware/auth";
+import { getAllowedOrigins, getRequestOrigin, isTrustedOrigin } from "../lib/cors";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
@@ -98,15 +99,17 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     const objectPath = `/objects/${wildcardPath}`;
     const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
 
-    // Validate same-origin or referer to prevent hotlinking from untrusted sites
-    const origin = req.headers.origin || req.headers.referer || "";
-    const allowedPrefixes = [
-      `https://${process.env.REPLIT_DEV_DOMAIN || ""}`,
-      `http://${process.env.REPLIT_DEV_DOMAIN || ""}`,
-    ];
-    const isLocal = !origin || origin.includes("localhost");
-    const isAllowed = isLocal || allowedPrefixes.some(p => origin.startsWith(p));
-    if (!isAllowed && origin) {
+    // Validate same-origin or referer to prevent hotlinking from untrusted sites.
+    // In production, require a trusted origin. In dev, allow missing Origin/Referer for local testing.
+    const requestOrigin = getRequestOrigin(req.headers.origin, req.headers.referer);
+    const allowedOrigins = getAllowedOrigins();
+    const requireOrigin = process.env.NODE_ENV === "production";
+    const isAllowed = isTrustedOrigin(requestOrigin, allowedOrigins, requireOrigin);
+    if (!isAllowed) {
+      let reason = "untrusted";
+      if (requestOrigin.invalid) reason = "malformed";
+      else if (requestOrigin.origin === null && requireOrigin) reason = "missing";
+      req.log.warn({ reason, origin: req.headers.origin }, "Blocked storage object request");
       res.status(403).json({ error: "Forbidden" });
       return;
     }
