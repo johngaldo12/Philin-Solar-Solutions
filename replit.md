@@ -15,7 +15,6 @@ A business website for Philin Solar, a solar energy services provider. Includes 
 - `SESSION_SECRET` — signs admin session cookies; app refuses to start without it ✓ already set
 - `ADMIN_USERNAME` — admin login username
 - `ADMIN_PASSWORD` — admin login password
-- `APP_FRONTEND_ORIGINS` (optional) — comma-separated full origins for custom frontends (e.g., `https://philsolar.onrender.com`). Used by CORS and storage hotlink protection.
 
 ## Stack
 
