@@ -52,6 +52,47 @@ router.post("/storage/uploads/request-url", requireAdmin, async (req: Request, r
 });
 
 /**
+ * POST /storage/video-uploads/request-url
+ *
+ * Request a presigned URL for a video upload. Video objects are kept in their
+ * own directory under PRIVATE_OBJECT_DIR so they can be managed separately
+ * from gallery photos and other uploads.
+ */
+router.post("/storage/video-uploads/request-url", requireAdmin, async (req: Request, res: Response) => {
+  const parsed = RequestUploadUrlBody.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "Missing or invalid required fields" });
+    return;
+  }
+
+  const { name, size, contentType } = parsed.data;
+  if (!contentType.startsWith("video/")) {
+    res.status(400).json({ error: "Only video uploads are allowed" });
+    return;
+  }
+  if (size > 250 * 1024 * 1024) {
+    res.status(400).json({ error: "Video size exceeds 250MB limit" });
+    return;
+  }
+
+  try {
+    const uploadURL = await objectStorageService.getVideoEntityUploadURL();
+    const objectPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
+
+    res.json(
+      RequestUploadUrlResponse.parse({
+        uploadURL,
+        objectPath,
+        metadata: { name, size, contentType },
+      }),
+    );
+  } catch (error) {
+    req.log.error({ err: error }, "Error generating video upload URL");
+    res.status(500).json({ error: "Failed to generate video upload URL" });
+  }
+});
+
+/**
  * GET /storage/public-objects/*
  *
  * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.

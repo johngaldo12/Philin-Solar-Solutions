@@ -107,6 +107,14 @@ export class ObjectStorageService {
   }
 
   async getObjectEntityUploadURL(): Promise<string> {
+    return this.getUploadURL("uploads");
+  }
+
+  async getVideoEntityUploadURL(): Promise<string> {
+    return this.getUploadURL("videos");
+  }
+
+  private async getUploadURL(directory: "uploads" | "videos"): Promise<string> {
     const privateObjectDir = this.getPrivateObjectDir();
     if (!privateObjectDir) {
       throw new Error(
@@ -116,7 +124,7 @@ export class ObjectStorageService {
     }
 
     const objectId = randomUUID();
-    const fullPath = `${privateObjectDir}/uploads/${objectId}`;
+    const fullPath = `${privateObjectDir}/${directory}/${objectId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
 

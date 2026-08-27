@@ -218,6 +218,67 @@ paths:
           description: Deleted
         "401":
           description: Unauthorized
+  /gallery/videos:
+    get:
+      operationId: getGalleryVideos
+      tags: [gallery]
+      summary: Get all gallery videos
+      responses:
+        "200":
+          description: List of gallery videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryVideoList"
+  /admin/gallery/videos:
+    get:
+      operationId: getAdminGalleryVideos
+      tags: [admin, gallery]
+      summary: Get all gallery videos for the admin
+      responses:
+        "200":
+          description: List of gallery videos
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryVideoList"
+        "401":
+          description: Unauthorized
+    post:
+      operationId: createGalleryVideo
+      tags: [admin, gallery]
+      summary: Add a gallery video
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateGalleryVideoBody"
+      responses:
+        "201":
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/GalleryVideoResponse"
+        "401":
+          description: Unauthorized
+  /admin/gallery/videos/{id}:
+    delete:
+      operationId: deleteGalleryVideo
+      tags: [admin, gallery]
+      summary: Delete a gallery video
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        "200":
+          description: Deleted
+        "401":
+          description: Unauthorized
   /storage/uploads/request-url:
     post:
       tags: [Storage]
@@ -247,6 +308,37 @@ paths:
                 $ref: '#/components/schemas/ErrorEnvelope'
         '500':
           description: Failed to generate upload URL.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+  /storage/video-uploads/request-url:
+    post:
+      tags: [Storage]
+      operationId: requestVideoUploadUrl
+      summary: Request a presigned URL for video upload
+      description: Returns a presigned upload URL for a video stored in the dedicated videos directory.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadUrlRequest'
+      responses:
+        '200':
+          description: Presigned video upload URL generated.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadUrlResponse'
+        '400':
+          description: Missing or invalid required fields.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorEnvelope'
+        '500':
+          description: Failed to generate video upload URL.
           content:
             application/json:
               schema:
@@ -460,6 +552,53 @@ components:
       properties:
         photo:
           $ref: "#/components/schemas/GalleryPhoto"
+    GalleryVideo:
+      type: object
+      required: [id, src, title, category, createdAt]
+      properties:
+        id:
+          type: integer
+        src:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        sortOrder:
+          type: integer
+        createdAt:
+          type: string
+          format: date-time
+    GalleryVideoList:
+      type: object
+      required: [videos]
+      properties:
+        videos:
+          type: array
+          items:
+            $ref: "#/components/schemas/GalleryVideo"
+    GalleryVideoResponse:
+      type: object
+      required: [video]
+      properties:
+        video:
+          $ref: "#/components/schemas/GalleryVideo"
+    CreateGalleryVideoBody:
+      type: object
+      required: [src, title]
+      properties:
+        src:
+          type: string
+        title:
+          type: string
+        description:
+          type: string
+        category:
+          type: string
+        sortOrder:
+          type: integer
     CreateGalleryBody:
       type: object
       required: [src, alt]

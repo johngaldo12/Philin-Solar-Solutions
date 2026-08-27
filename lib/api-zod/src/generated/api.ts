@@ -170,6 +170,58 @@ export const DeleteGalleryPhotoParams = zod.object({
 
 
 /**
+ * @summary Get all gallery videos
+ */
+export const GetGalleryVideosResponse = zod.object({
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "src": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "category": zod.string(),
+  "sortOrder": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Get all gallery videos for the admin
+ */
+export const GetAdminGalleryVideosResponse = zod.object({
+  "videos": zod.array(zod.object({
+  "id": zod.number(),
+  "src": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "category": zod.string(),
+  "sortOrder": zod.number().optional(),
+  "createdAt": zod.coerce.date()
+}))
+})
+
+
+/**
+ * @summary Add a gallery video
+ */
+export const CreateGalleryVideoBody = zod.object({
+  "src": zod.string(),
+  "title": zod.string(),
+  "description": zod.string().optional(),
+  "category": zod.string().optional(),
+  "sortOrder": zod.number().optional()
+})
+
+
+/**
+ * @summary Delete a gallery video
+ */
+export const DeleteGalleryVideoParams = zod.object({
+  "id": zod.coerce.number()
+})
+
+
+/**
  * Returns a presigned GCS URL for direct upload. The client sends JSON
 metadata here, then uploads the file directly to the returned URL.
 
@@ -192,6 +244,37 @@ export const RequestUploadUrlBody = zod.object({
 
 
 export const RequestUploadUrlResponse = zod.object({
+  "uploadURL": zod.string().url().describe('Presigned GCS URL for PUT upload.'),
+  "objectPath": zod.string().describe('Normalized object path (e.g. `\/objects\/uploads\/uuid`). Store this in your database.'),
+  "metadata": zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+}).optional()
+})
+
+
+/**
+ * Returns a presigned upload URL for a video stored in the dedicated videos directory.
+ * @summary Request a presigned URL for video upload
+ */
+
+
+
+
+
+export const RequestVideoUploadUrlBody = zod.object({
+  "name": zod.string().min(1).describe('Original file name.'),
+  "size": zod.number().min(1).describe('File size in bytes.'),
+  "contentType": zod.string().min(1).describe('MIME type of the file (e.g. `image\/jpeg`).')
+})
+
+
+
+
+
+
+export const RequestVideoUploadUrlResponse = zod.object({
   "uploadURL": zod.string().url().describe('Presigned GCS URL for PUT upload.'),
   "objectPath": zod.string().describe('Normalized object path (e.g. `\/objects\/uploads\/uuid`). Store this in your database.'),
   "metadata": zod.object({
