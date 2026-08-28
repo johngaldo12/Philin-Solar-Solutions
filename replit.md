@@ -16,6 +16,14 @@ A business website for Philin Solar, a solar energy services provider. Includes 
 - `ADMIN_USERNAME` — admin login username
 - `ADMIN_PASSWORD` — admin login password
 
+For Render or another non-Replit host, also configure:
+
+- `MEDIA_STORAGE_PROVIDER=local` — use the host's filesystem instead of Replit App Storage
+- `MEDIA_STORAGE_DIR` — absolute path to the persistent media directory
+- `CORS_ALLOWED_ORIGINS` — comma-separated frontend origin(s) when the frontend and API use different domains
+- `MEDIA_ALLOWED_ORIGINS` — comma-separated origin(s) allowed to display uploaded media
+- `VITE_API_URL` — API service URL when the Render frontend and API are deployed separately
+
 ## Stack
 
 - pnpm workspaces, Node.js 24, TypeScript 5.9
@@ -39,6 +47,8 @@ A business website for Philin Solar, a solar energy services provider. Includes 
 - Vite config uses `server.allowedHosts: true` for Replit's proxied iframe environment
 - Uploaded photos use `PRIVATE_OBJECT_DIR/uploads/`; uploaded videos use `PRIVATE_OBJECT_DIR/videos/`
 - PostgreSQL stores media metadata and the `/objects/...` path; file bytes stay in Replit App Storage
+- Storage is selected dynamically: Replit App Storage is used when `PRIVATE_OBJECT_DIR` is present, otherwise local storage uses `MEDIA_STORAGE_DIR` (or `UPLOAD_DIR`, then `./uploads`)
+- Local storage keeps the same API paths and supports image/video uploads plus byte-range video playback
 
 ## User preferences
 

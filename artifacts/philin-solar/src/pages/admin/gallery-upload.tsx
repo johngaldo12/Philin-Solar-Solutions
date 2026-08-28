@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiUrl } from "@/lib/api-url";
 
 export default function GalleryUploadPage() {
   const [, navigate] = useLocation();
@@ -41,7 +42,7 @@ export default function GalleryUploadPage() {
     setUploading(true);
     try {
       // Request presigned URL
-      const urlRes = await fetch("/api/storage/uploads/request-url", {
+      const urlRes = await fetch(apiUrl("/api/storage/uploads/request-url"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -55,17 +56,19 @@ export default function GalleryUploadPage() {
       const { uploadURL, objectPath } = await urlRes.json();
       if (!uploadURL || !objectPath) throw new Error("Invalid upload URL response");
 
-      // Upload directly to GCS
-      const gcsRes = await fetch(uploadURL, {
+      // Replit returns a signed GCS URL; Render/local storage returns a
+      // same-origin API URL. Both use the same upload flow.
+      const uploadRes = await fetch(apiUrl(uploadURL), {
         method: "PUT",
         headers: { "Content-Type": file.type },
+        credentials: uploadURL.startsWith("/api/") ? "include" : "omit",
         body: file,
       });
-      if (!gcsRes.ok) throw new Error("Failed to upload to storage");
+      if (!uploadRes.ok) throw new Error("Failed to upload to storage");
 
       // Save photo record
       const servingUrl = `/api/storage${objectPath}`;
-      const saveRes = await fetch("/api/admin/gallery", {
+      const saveRes = await fetch(apiUrl("/api/admin/gallery"), {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

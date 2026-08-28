@@ -5,10 +5,24 @@ import {
   RequestUploadUrlResponse,
 } from "@workspace/api-zod";
 import { ObjectStorageService, ObjectNotFoundError } from "../lib/objectStorage";
-import { requireAdmin } from "../middleware/auth";
+import { requireAdmin, type AuthenticatedRequest } from "../middleware/auth";
 
 const router: IRouter = Router();
 const objectStorageService = new ObjectStorageService();
+
+function isAllowedMediaOrigin(req: Request): boolean {
+  const requestOrigin = `${req.protocol}://${req.get("host")}`;
+  const configuredOrigins = (process.env.MEDIA_ALLOWED_ORIGINS || "")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
+  const replitOrigins = [process.env.REPLIT_DEV_DOMAIN, ...(process.env.REPLIT_DOMAINS || "").split(",")]
+    .filter(Boolean)
+    .flatMap((domain) => [`https://${domain}`, `http://${domain}`]);
+  const allowedOrigins = new Set([requestOrigin, ...configuredOrigins, ...replitOrigins]);
+  const origin = req.headers.origin || req.headers.referer || "";
+  return !origin || allowedOrigins.has(origin) || origin.startsWith(`${requestOrigin}/`);
+}
 
 /**
  * POST /storage/uploads/request-url
@@ -93,6 +107,49 @@ router.post("/storage/video-uploads/request-url", requireAdmin, async (req: Requ
 });
 
 /**
+ * PUT /storage/local-uploads/:directory/:objectId
+ *
+ * Upload endpoint used when running outside Replit. The URL is returned by
+ * the request-url endpoints and is same-origin, so the admin session cookie
+ * is sent with the upload.
+ */
+router.put(
+  "/storage/local-uploads/:directory/:objectId",
+  requireAdmin,
+  async (req: AuthenticatedRequest, res: Response) => {
+    if (!objectStorageService.isLocalProvider()) {
+      res.status(404).json({ error: "Local storage is not enabled" });
+      return;
+    }
+
+    const rawDirectory = req.params.directory;
+    const rawObjectId = req.params.objectId;
+    const directory = Array.isArray(rawDirectory) ? rawDirectory[0] : rawDirectory;
+    const objectId = Array.isArray(rawObjectId) ? rawObjectId[0] : rawObjectId;
+    if (
+      (directory !== "uploads" && directory !== "videos") ||
+      !/^[0-9a-f-]{36}$/i.test(objectId)
+    ) {
+      res.status(400).json({ error: "Invalid upload path" });
+      return;
+    }
+
+    try {
+      await objectStorageService.saveLocalUpload(
+        directory,
+        objectId,
+        req.headers["content-type"] || "application/octet-stream",
+        req,
+      );
+      res.status(201).json({ success: true });
+    } catch (error) {
+      req.log.error({ err: error }, "Error saving local upload");
+      res.status(400).json({ error: "Failed to save upload" });
+    }
+  },
+);
+
+/**
  * GET /storage/public-objects/*
  *
  * Serve public assets from PUBLIC_OBJECT_SEARCH_PATHS.
@@ -137,21 +194,30 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     const raw = req.params.path;
     const wildcardPath = Array.isArray(raw) ? raw.join("/") : raw;
     const objectPath = `/objects/${wildcardPath}`;
-    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
-
-    // Validate same-origin or referer to prevent hotlinking from untrusted sites
-    const origin = req.headers.origin || req.headers.referer || "";
-    const allowedPrefixes = [
-      `https://${process.env.REPLIT_DEV_DOMAIN || ""}`,
-      `http://${process.env.REPLIT_DEV_DOMAIN || ""}`,
-    ];
-    const isLocal = !origin || origin.includes("localhost");
-    const isAllowed = isLocal || allowedPrefixes.some(p => origin.startsWith(p));
-    if (!isAllowed && origin) {
+    if (!isAllowedMediaOrigin(req)) {
       res.status(403).json({ error: "Forbidden" });
       return;
     }
 
+    if (objectStorageService.isLocalProvider()) {
+      const localObject = await objectStorageService.getLocalObject(objectPath);
+      const range = parseRange(req.headers.range, localObject.size);
+      res.setHeader("Content-Type", localObject.contentType);
+      res.setHeader("Accept-Ranges", "bytes");
+      res.setHeader("Cache-Control", "public, max-age=3600");
+      if (range) {
+        res.status(206);
+        res.setHeader("Content-Range", `bytes ${range.start}-${range.end}/${localObject.size}`);
+        res.setHeader("Content-Length", range.end - range.start + 1);
+        objectStorageService.createLocalReadStream(localObject.filePath, range).pipe(res);
+      } else {
+        res.setHeader("Content-Length", localObject.size);
+        objectStorageService.createLocalReadStream(localObject.filePath).pipe(res);
+      }
+      return;
+    }
+
+    const objectFile = await objectStorageService.getObjectEntityFile(objectPath);
     const response = await objectStorageService.downloadObject(objectFile);
 
     res.status(response.status);
@@ -173,5 +239,24 @@ router.get("/storage/objects/*path", async (req: Request, res: Response) => {
     res.status(500).json({ error: "Failed to serve object" });
   }
 });
+
+function parseRange(
+  header: string | undefined,
+  size: number,
+): { start: number; end: number } | null {
+  if (!header?.startsWith("bytes=")) return null;
+  const [startText, endText] = header.slice("bytes=".length).split("-", 2);
+  let start = Number(startText);
+  let end = endText ? Number(endText) : size - 1;
+  if (!Number.isFinite(start) || !Number.isFinite(end)) return null;
+  if (!startText) {
+    const suffixLength = Number(endText);
+    if (!Number.isFinite(suffixLength) || suffixLength <= 0) return null;
+    start = Math.max(size - suffixLength, 0);
+    end = size - 1;
+  }
+  if (start < 0 || end < start || start >= size) return null;
+  return { start, end: Math.min(end, size - 1) };
+}
 
 export default router;

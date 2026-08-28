@@ -1,4 +1,5 @@
 import { useLocation } from "wouter";
+import { apiUrl, mediaUrl } from "@/lib/api-url";
 import { useAuth } from "@/context/auth-context";
 import { Newspaper, Image, Video, LogOut, LayoutDashboard, Plus, Edit3, Trash2, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +42,7 @@ function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["admin-news"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/news", { credentials: "include" });
+      const res = await fetch(apiUrl("/api/admin/news"), { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch news");
       const data = await res.json();
       return data.posts || [];
@@ -53,7 +54,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["admin-gallery"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/gallery", { credentials: "include" });
+      const res = await fetch(apiUrl("/api/admin/gallery"), { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
@@ -65,7 +66,7 @@ function useGalleryVideos() {
   return useQuery<GalleryVideo[]>({
     queryKey: ["admin-gallery-videos"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/gallery/videos", { credentials: "include" });
+      const res = await fetch(apiUrl("/api/admin/gallery/videos"), { credentials: "include" });
       if (!res.ok) throw new Error("Failed to fetch gallery videos");
       const data = await res.json();
       return data.videos || [];
@@ -143,7 +144,7 @@ function NewsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/news/${id}`, {
+      const res = await fetch(apiUrl(`/api/admin/news/${id}`), {
         method: "DELETE",
         credentials: "include",
       });
@@ -170,7 +171,7 @@ function NewsManager() {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {post.imageUrl && (
-                    <img src={post.imageUrl} alt={post.title} className="w-16 h-16 object-cover rounded-lg" />
+                    <img src={mediaUrl(post.imageUrl)} alt={post.title} className="w-16 h-16 object-cover rounded-lg" />
                   )}
                   <div>
                     <h3 className="font-semibold">{post.title}</h3>
@@ -210,7 +211,7 @@ function GalleryManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/gallery/${id}`, {
+      const res = await fetch(apiUrl(`/api/admin/gallery/${id}`), {
         method: "DELETE",
         credentials: "include",
       });
@@ -221,7 +222,7 @@ function GalleryManager() {
 
   const deleteVideoMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/gallery/videos/${id}`, {
+      const res = await fetch(apiUrl(`/api/admin/gallery/videos/${id}`), {
         method: "DELETE",
         credentials: "include",
       });
@@ -279,7 +280,7 @@ function GalleryManager() {
           ) : videos && videos.length > 0 ? (
             videos.map((video) => (
               <div key={video.id} className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <video src={video.src} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
+                <video src={mediaUrl(video.src)} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
                 <div className="p-3">
                   <div className="flex items-start gap-2">
                     <Play className="w-4 h-4 mt-0.5 text-primary shrink-0" />
