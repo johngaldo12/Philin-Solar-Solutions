@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
+import { apiFetch, mediaUrl } from "@/lib/api";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -45,7 +46,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["gallery"],
     queryFn: async () => {
-      const res = await fetch("/api/gallery");
+      const res = await apiFetch("/api/gallery");
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
@@ -176,7 +177,7 @@ export default function GalleryPage() {
                         onClick={() => openLightbox(i)}
                       >
                         <img
-                          src={img.src}
+                          src={mediaUrl(img.src)}
                           alt={img.alt}
                           loading="lazy"
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
@@ -259,7 +260,7 @@ export default function GalleryPage() {
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
               transition={{ duration: 0.2 }}
-              src={filteredImages[lightbox].src}
+              src={mediaUrl(filteredImages[lightbox].src)}
               alt={filteredImages[lightbox].alt}
               className="max-w-full max-h-[85vh] object-contain rounded-lg"
               onClick={(e) => e.stopPropagation()}

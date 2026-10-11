@@ -21,6 +21,10 @@ for (const d of rawDomains.split(",")) {
   allowedOrigins.add(`https://${trimmed}`);
   allowedOrigins.add(`http://${trimmed}`);
 }
+for (const origin of (process.env["CORS_ALLOWED_ORIGINS"] || "").split(",")) {
+  const trimmed = origin.trim().replace(/\/+$/, "");
+  if (trimmed) allowedOrigins.add(trimmed);
+}
 // Localhost for dev testing
 allowedOrigins.add("http://localhost");
 allowedOrigins.add("http://localhost:80");

@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: philin-solar-site
+    runtime: static
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm --filter @workspace/philin-solar run build
+    staticPublishPath: artifacts/philin-solar/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_BASE_URL
+        sync: false

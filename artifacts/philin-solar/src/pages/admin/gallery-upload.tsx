@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch } from "@/lib/api";
 
 export default function GalleryUploadPage() {
   const [, navigate] = useLocation();
@@ -41,10 +42,9 @@ export default function GalleryUploadPage() {
     setUploading(true);
     try {
       // Request presigned URL
-      const urlRes = await fetch("/api/storage/uploads/request-url", {
+      const urlRes = await apiFetch("/api/storage/uploads/request-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({
           name: file.name,
           size: file.size,
@@ -65,10 +65,9 @@ export default function GalleryUploadPage() {
 
       // Save photo record
       const servingUrl = `/api/storage${objectPath}`;
-      const saveRes = await fetch("/api/admin/gallery", {
+      const saveRes = await apiFetch("/api/admin/gallery", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ src: servingUrl, alt, category, sortOrder: 0 }),
       });
       if (!saveRes.ok) throw new Error("Failed to save photo");

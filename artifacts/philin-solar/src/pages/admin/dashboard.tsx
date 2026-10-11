@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { apiFetch, mediaUrl } from "@/lib/api";
 
 interface NewsPost {
   id: number;
@@ -31,7 +32,7 @@ function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["admin-news"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/news", { credentials: "include" });
+      const res = await apiFetch("/api/admin/news");
       if (!res.ok) throw new Error("Failed to fetch news");
       const data = await res.json();
       return data.posts || [];
@@ -43,7 +44,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["admin-gallery"],
     queryFn: async () => {
-      const res = await fetch("/api/admin/gallery", { credentials: "include" });
+      const res = await apiFetch("/api/admin/gallery");
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
@@ -121,9 +122,8 @@ function NewsManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/news/${id}`, {
+      const res = await apiFetch(`/api/admin/news/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete");
     },
@@ -148,7 +148,7 @@ function NewsManager() {
               <CardContent className="p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   {post.imageUrl && (
-                    <img src={post.imageUrl} alt={post.title} className="w-16 h-16 object-cover rounded-lg" />
+                    <img src={mediaUrl(post.imageUrl)} alt={post.title} className="w-16 h-16 object-cover rounded-lg" />
                   )}
                   <div>
                     <h3 className="font-semibold">{post.title}</h3>
@@ -187,9 +187,8 @@ function GalleryManager() {
 
   const deleteMutation = useMutation({
     mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/gallery/${id}`, {
+      const res = await apiFetch(`/api/admin/gallery/${id}`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to delete");
     },
@@ -211,7 +210,7 @@ function GalleryManager() {
         ) : photos && photos.length > 0 ? (
           photos.map((photo) => (
             <div key={photo.id} className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-              <img src={photo.src} alt={photo.alt} className="w-full h-32 object-cover" />
+              <img src={mediaUrl(photo.src)} alt={photo.alt} className="w-full h-32 object-cover" />
               <div className="p-2">
                 <p className="text-xs font-medium truncate">{photo.alt}</p>
                 <p className="text-[10px] text-muted-foreground uppercase">{photo.category}</p>
