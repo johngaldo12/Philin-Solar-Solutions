@@ -10,7 +10,7 @@ router.post("/admin/login", (req: AuthenticatedRequest, res) => {
       signed: true,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.CORS_ALLOWED_ORIGINS ? "none" : "lax",
+      sameSite: "lax",
       maxAge: 1000 * 60 * 60 * 24,
     });
     res.json({ success: true, username });

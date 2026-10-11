@@ -3,7 +3,6 @@ import { ArrowLeft, Calendar } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { apiUrl, mediaUrl } from "@/lib/api-url";
 
 interface NewsPost {
   id: number;
@@ -23,7 +22,7 @@ export default function NewsDetailPage() {
   const { data: post, isLoading } = useQuery<NewsPost>({
     queryKey: ["news", postId],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`/api/news/${postId}`));
+      const res = await fetch(`/api/news/${postId}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       return data.post;
@@ -89,7 +88,7 @@ export default function NewsDetailPage() {
               </p>
             )}
             {post.imageUrl && (
-              <img src={mediaUrl(post.imageUrl)} alt={post.title} className="w-full h-72 md:h-96 object-cover rounded-xl mb-8" />
+              <img src={post.imageUrl} alt={post.title} className="w-full h-72 md:h-96 object-cover rounded-xl mb-8" />
             )}
             <div className="prose max-w-none whitespace-pre-wrap text-foreground leading-relaxed">
               {post.content}

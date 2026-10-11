@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Link } from "wouter";
-import { mediaUrl, apiUrl } from "@/lib/api-url";
 import { Calendar, ArrowRight, Newspaper } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 import { motion } from "framer-motion";
@@ -19,7 +18,7 @@ function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["news"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/news"));
+      const res = await fetch("/api/news");
       if (!res.ok) throw new Error("Failed to fetch news");
       const data = await res.json();
       return data.posts || [];
@@ -78,7 +77,7 @@ export default function NewsPage() {
                   {post.imageUrl && (
                     <div className="h-48 overflow-hidden">
                       <img
-                        src={mediaUrl(post.imageUrl)}
+                        src={post.imageUrl}
                         alt={post.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />

@@ -4,7 +4,6 @@ import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
 import { ImagePlus, X, ChevronLeft, ChevronRight, Camera, Video as FilmIcon } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
-import { apiUrl, mediaUrl } from "@/lib/api-url";
 
 const fadeInUp = {
   hidden: { opacity: 0, y: 40 },
@@ -54,7 +53,7 @@ function useGalleryPhotos() {
   return useQuery<GalleryPhoto[]>({
     queryKey: ["gallery"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/gallery"));
+      const res = await fetch("/api/gallery");
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
@@ -66,7 +65,7 @@ function useGalleryVideos() {
   return useQuery<GalleryVideo[]>({
     queryKey: ["gallery-videos"],
     queryFn: async () => {
-      const res = await fetch(apiUrl("/api/gallery/videos"));
+      const res = await fetch("/api/gallery/videos");
       if (!res.ok) throw new Error("Failed to fetch gallery videos");
       const data = await res.json();
       return data.videos || [];
@@ -182,7 +181,7 @@ export default function GalleryPage() {
                 >
                   {videos.map((video) => (
                     <motion.article key={video.id} variants={fadeInUp} className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                      <video src={mediaUrl(video.src)} controls preload="metadata" className="w-full aspect-video bg-black object-cover" />
+                      <video src={video.src} controls preload="metadata" className="w-full aspect-video bg-black object-cover" />
                       <div className="p-5">
                         <h3 className="text-lg font-semibold text-foreground">{video.title}</h3>
                         {video.description && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{video.description}</p>}

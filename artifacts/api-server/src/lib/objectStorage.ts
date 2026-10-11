@@ -1,10 +1,6 @@
 import { Storage, File } from "@google-cloud/storage";
-import { Readable, Transform } from "stream";
+import { Readable } from "stream";
 import { randomUUID } from "crypto";
-import { createReadStream, createWriteStream } from "fs";
-import { mkdir, readFile, stat, unlink, writeFile } from "fs/promises";
-import { dirname, extname, join, resolve } from "path";
-import { pipeline } from "stream/promises";
 import {
   ObjectAclPolicy,
   ObjectPermission,
@@ -16,34 +12,22 @@ import {
 const REPLIT_SIDECAR_ENDPOINT = "http://127.0.0.1:1106";
 
 export const objectStorageClient = new Storage({
-    credentials: {
-      audience: "replit",
-      subject_token_type: "access_token",
-      token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
-      type: "external_account",
-      credential_source: {
-        url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
-        format: {
-          type: "json",
-          subject_token_field_name: "access_token",
-        },
+  credentials: {
+    audience: "replit",
+    subject_token_type: "access_token",
+    token_url: `${REPLIT_SIDECAR_ENDPOINT}/token`,
+    type: "external_account",
+    credential_source: {
+      url: `${REPLIT_SIDECAR_ENDPOINT}/credential`,
+      format: {
+        type: "json",
+        subject_token_field_name: "access_token",
       },
-      universe_domain: "googleapis.com",
     },
-    projectId: "",
+    universe_domain: "googleapis.com",
+  },
+  projectId: "",
 });
-
-type StorageProvider = "replit" | "local";
-type LocalObject = {
-  filePath: string;
-  contentType: string;
-  size: number;
-};
-
-const LOCAL_UPLOAD_LIMITS = {
-  uploads: 10 * 1024 * 1024,
-  videos: 250 * 1024 * 1024,
-} as const;
 
 export class ObjectNotFoundError extends Error {
   constructor() {
@@ -54,28 +38,7 @@ export class ObjectNotFoundError extends Error {
 }
 
 export class ObjectStorageService {
-  getProvider(): StorageProvider {
-    const configured = process.env.MEDIA_STORAGE_PROVIDER?.trim().toLowerCase();
-    if (configured === "replit" || configured === "local") {
-      return configured;
-    }
-
-    // Replit provisions PRIVATE_OBJECT_DIR automatically. Other hosts use the
-    // local provider unless a provider is explicitly configured.
-    return process.env.PRIVATE_OBJECT_DIR ? "replit" : "local";
-  }
-
-  isLocalProvider(): boolean {
-    return this.getProvider() === "local";
-  }
-
-  getLocalStorageDir(): string {
-    return resolve(
-      process.env.MEDIA_STORAGE_DIR ||
-        process.env.UPLOAD_DIR ||
-        join(process.cwd(), "uploads"),
-    );
-  }
+  constructor() {}
 
   getPublicObjectSearchPaths(): Array<string> {
     const pathsStr = process.env.PUBLIC_OBJECT_SEARCH_PATHS || "";
@@ -108,10 +71,6 @@ export class ObjectStorageService {
   }
 
   async searchPublicObject(filePath: string): Promise<File | null> {
-    if (this.isLocalProvider()) {
-      return null;
-    }
-
     for (const searchPath of this.getPublicObjectSearchPaths()) {
       const fullPath = `${searchPath}/${filePath}`;
 
@@ -156,14 +115,15 @@ export class ObjectStorageService {
   }
 
   private async getUploadURL(directory: "uploads" | "videos"): Promise<string> {
-    const objectId = randomUUID();
-    if (this.isLocalProvider()) {
-      // A relative URL keeps uploads same-origin on Render and local hosts,
-      // while Replit continues to use its signed cross-origin URL.
-      return `/api/storage/local-uploads/${directory}/${objectId}`;
+    const privateObjectDir = this.getPrivateObjectDir();
+    if (!privateObjectDir) {
+      throw new Error(
+        "PRIVATE_OBJECT_DIR not set. Create a bucket in 'Object Storage' " +
+          "tool and set PRIVATE_OBJECT_DIR env var."
+      );
     }
 
-    const privateObjectDir = this.getPrivateObjectDir();
+    const objectId = randomUUID();
     const fullPath = `${privateObjectDir}/${directory}/${objectId}`;
 
     const { bucketName, objectName } = parseObjectPath(fullPath);
@@ -176,106 +136,7 @@ export class ObjectStorageService {
     });
   }
 
-  async saveLocalUpload(
-    directory: "uploads" | "videos",
-    objectId: string,
-    contentType: string,
-    source: AsyncIterable<Uint8Array>,
-  ): Promise<void> {
-    if (!this.isLocalProvider()) {
-      throw new Error("Local uploads are not enabled for the current storage provider");
-    }
-
-    const filePath = this.getLocalFilePath(`/objects/${directory}/${objectId}`);
-    const metadataPath = `${filePath}.meta.json`;
-    const maxSize = LOCAL_UPLOAD_LIMITS[directory];
-    let bytesWritten = 0;
-
-    await mkdir(dirname(filePath), { recursive: true });
-    try {
-      const counter = new Transform({
-        transform(chunk: Buffer, _encoding, callback) {
-          bytesWritten += chunk.length;
-          if (bytesWritten > maxSize) {
-            callback(new Error(`File exceeds the ${maxSize} byte limit`));
-            return;
-          }
-          callback(null, chunk);
-        },
-      });
-
-      await pipeline(source, counter, createWriteStream(filePath, { flags: "wx" }));
-      await writeFile(
-        metadataPath,
-        JSON.stringify({ contentType: contentType || "application/octet-stream" }),
-        "utf8",
-      );
-    } catch (error) {
-      await unlink(filePath).catch(() => undefined);
-      await unlink(metadataPath).catch(() => undefined);
-      throw error;
-    }
-
-  }
-
-  async getLocalObject(objectPath: string): Promise<LocalObject> {
-    if (!this.isLocalProvider()) {
-      throw new ObjectNotFoundError();
-    }
-
-    const filePath = this.getLocalFilePath(objectPath);
-    try {
-      const fileStats = await stat(filePath);
-      if (!fileStats.isFile()) {
-        throw new ObjectNotFoundError();
-      }
-      let contentType = "application/octet-stream";
-      try {
-        const metadata = JSON.parse(await readFile(`${filePath}.meta.json`, "utf8")) as {
-          contentType?: string;
-        };
-        contentType = metadata.contentType || contentType;
-      } catch {
-        const extension = extname(filePath).toLowerCase();
-        if (extension === ".jpg" || extension === ".jpeg") contentType = "image/jpeg";
-        if (extension === ".png") contentType = "image/png";
-        if (extension === ".webp") contentType = "image/webp";
-        if (extension === ".mp4") contentType = "video/mp4";
-        if (extension === ".webm") contentType = "video/webm";
-      }
-      return { filePath, contentType, size: fileStats.size };
-    } catch (error) {
-      if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-        throw new ObjectNotFoundError();
-      }
-      throw error;
-    }
-  }
-
-  createLocalReadStream(filePath: string, range?: { start: number; end: number }) {
-    return range
-      ? createReadStream(filePath, { start: range.start, end: range.end })
-      : createReadStream(filePath);
-  }
-
-  private getLocalFilePath(objectPath: string): string {
-    if (!objectPath.startsWith("/objects/")) {
-      throw new ObjectNotFoundError();
-    }
-    const relativePath = objectPath.slice("/objects/".length);
-    const root = this.getLocalStorageDir();
-    const filePath = resolve(root, relativePath);
-    if (filePath !== root && !filePath.startsWith(`${root}/`)) {
-      throw new ObjectNotFoundError();
-    }
-    return filePath;
-  }
-
   async getObjectEntityFile(objectPath: string): Promise<File> {
-    if (this.isLocalProvider()) {
-      throw new ObjectNotFoundError();
-    }
-
     if (!objectPath.startsWith("/objects/")) {
       throw new ObjectNotFoundError();
     }
@@ -302,11 +163,6 @@ export class ObjectStorageService {
   }
 
   normalizeObjectEntityPath(rawPath: string): string {
-    if (this.isLocalProvider() && rawPath.startsWith("/api/storage/local-uploads/")) {
-      const entityId = rawPath.slice("/api/storage/local-uploads/".length);
-      return `/objects/${entityId}`;
-    }
-
     if (!rawPath.startsWith("https://storage.googleapis.com/")) {
       return rawPath;
     }
@@ -350,10 +206,6 @@ export class ObjectStorageService {
     objectFile: File;
     requestedPermission?: ObjectPermission;
   }): Promise<boolean> {
-    if (this.isLocalProvider()) {
-      return true;
-    }
-
     return canAccessObject({
       userId,
       objectFile,

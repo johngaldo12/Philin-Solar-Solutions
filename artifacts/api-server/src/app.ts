@@ -7,10 +7,9 @@ import { logger } from "./lib/logger";
 
 const app: Express = express();
 
-// --- CORS: allow configured frontend origins and Replit development origins ---
+// --- CORS: lock to known Replit origins only ---
 const rawDomains = process.env["REPLIT_DOMAINS"] || "";
 const devDomain = process.env["REPLIT_DEV_DOMAIN"] || "";
-const configuredOrigins = process.env["CORS_ALLOWED_ORIGINS"] || "";
 const allowedOrigins = new Set<string>();
 if (devDomain) {
   allowedOrigins.add(`https://${devDomain}`);
@@ -21,10 +20,6 @@ for (const d of rawDomains.split(",")) {
   if (!trimmed) continue;
   allowedOrigins.add(`https://${trimmed}`);
   allowedOrigins.add(`http://${trimmed}`);
-}
-for (const origin of configuredOrigins.split(",")) {
-  const trimmed = origin.trim();
-  if (trimmed) allowedOrigins.add(trimmed.replace(/\/$/, ""));
 }
 // Localhost for dev testing
 allowedOrigins.add("http://localhost");

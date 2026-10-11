@@ -7,7 +7,6 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { useQueryClient } from "@tanstack/react-query";
-import { apiUrl } from "@/lib/api-url";
 
 const videoCategories = [
   { value: "events", label: "Events" },
@@ -59,7 +58,7 @@ export default function VideoUploadPage() {
     if (!file || !title.trim()) return;
     setUploading(true);
     try {
-      const urlRes = await fetch(apiUrl("/api/storage/video-uploads/request-url"), {
+      const urlRes = await fetch("/api/storage/video-uploads/request-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
@@ -75,15 +74,14 @@ export default function VideoUploadPage() {
         throw new Error("Invalid video storage path");
       }
 
-      const uploadRes = await fetch(apiUrl(uploadURL), {
+      const uploadRes = await fetch(uploadURL, {
         method: "PUT",
         headers: { "Content-Type": file.type },
-        credentials: uploadURL.startsWith("/api/") ? "include" : "omit",
         body: file,
       });
       if (!uploadRes.ok) throw new Error("Failed to upload video");
 
-      const saveRes = await fetch(apiUrl("/api/admin/gallery/videos"), {
+      const saveRes = await fetch("/api/admin/gallery/videos", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",

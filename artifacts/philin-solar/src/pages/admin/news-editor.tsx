@@ -8,7 +8,6 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { apiUrl, mediaUrl } from "@/lib/api-url";
 
 interface NewsPost {
   id: number;
@@ -40,7 +39,7 @@ export default function NewsEditorPage() {
   const { data: existingPost } = useQuery<NewsPost>({
     queryKey: ["news", postId],
     queryFn: async () => {
-      const res = await fetch(apiUrl(`/api/news/${postId}`));
+      const res = await fetch(`/api/news/${postId}`);
       if (!res.ok) throw new Error("Failed to fetch");
       const data = await res.json();
       return data.post;
@@ -76,7 +75,7 @@ export default function NewsEditorPage() {
     setSaving(true);
     try {
       if (isNew) {
-        const res = await fetch(apiUrl("/api/admin/news"), {
+        const res = await fetch("/api/admin/news", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -84,7 +83,7 @@ export default function NewsEditorPage() {
         });
         if (!res.ok) throw new Error("Failed to create");
       } else if (postId) {
-        const res = await fetch(apiUrl(`/api/admin/news/${postId}`), {
+        const res = await fetch(`/api/admin/news/${postId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -132,7 +131,7 @@ export default function NewsEditorPage() {
       <div className="container mx-auto px-4 py-8">
         {preview ? (
           <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-sm p-8">
-            {imageUrl && <img src={mediaUrl(imageUrl)} alt={title} className="w-full h-64 object-cover rounded-lg mb-6" />}
+            {imageUrl && <img src={imageUrl} alt={title} className="w-full h-64 object-cover rounded-lg mb-6" />}
             <h1 className="text-3xl font-bold mb-4">{title}</h1>
             {excerpt && <p className="text-lg text-muted-foreground mb-6 italic">{excerpt}</p>}
             <div className="prose max-w-none whitespace-pre-wrap">{content}</div>
