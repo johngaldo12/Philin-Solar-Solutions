@@ -2,7 +2,7 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Link } from "wouter";
 import { Button } from "@/components/ui/button";
-import { ImagePlus, X, ChevronLeft, ChevronRight, Camera, Video as FilmIcon } from "lucide-react";
+import { ImagePlus, X, ChevronLeft, ChevronRight, Camera } from "lucide-react";
 import { useQuery } from "@tanstack/react-query";
 
 const fadeInUp = {
@@ -19,14 +19,6 @@ interface GalleryPhoto {
   id: number;
   src: string;
   alt: string;
-  category: string;
-}
-
-interface GalleryVideo {
-  id: number;
-  src: string;
-  title: string;
-  description: string | null;
   category: string;
 }
 
@@ -61,25 +53,12 @@ function useGalleryPhotos() {
   });
 }
 
-function useGalleryVideos() {
-  return useQuery<GalleryVideo[]>({
-    queryKey: ["gallery-videos"],
-    queryFn: async () => {
-      const res = await fetch("/api/gallery/videos");
-      if (!res.ok) throw new Error("Failed to fetch gallery videos");
-      const data = await res.json();
-      return data.videos || [];
-    },
-  });
-}
-
-const tabs = ["All", "Ceremonial", "Installation", "Team", "Products", "Events", "Videos"];
+const tabs = ["All", "Ceremonial", "Installation", "Team", "Products", "Events"];
 
 export default function GalleryPage() {
   const [activeTab, setActiveTab] = useState("All");
   const [lightbox, setLightbox] = useState<number | null>(null);
   const { data: apiPhotos } = useGalleryPhotos();
-  const { data: videos, isLoading: videosLoading } = useGalleryVideos();
 
   const allPhotos = apiPhotos ? [...staticCeremonialImages, ...apiPhotos] : staticCeremonialImages;
 
@@ -152,119 +131,71 @@ export default function GalleryPage() {
             ))}
           </motion.div>
 
-          {activeTab === "Videos" ? (
+          {/* Photo Grid */}
+          <AnimatePresence mode="wait">
             <motion.div
+              key={activeTab}
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              className="space-y-10"
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.4 }}
             >
-              <div className="mb-10">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <FilmIcon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl md:text-3xl font-bold text-foreground">Videos</h2>
-                    <p className="text-sm text-muted-foreground">
-                      {videosLoading ? "Loading videos..." : `${videos?.length ?? 0} videos`}
-                    </p>
-                  </div>
-                </div>
-                <div className="h-px bg-border w-full" />
-              </div>
-              {videos && videos.length > 0 ? (
-                <motion.div
-                  initial="hidden"
-                  animate="visible"
-                  variants={stagger}
-                  className="grid grid-cols-1 md:grid-cols-2 gap-6"
-                >
-                  {videos.map((video) => (
-                    <motion.article key={video.id} variants={fadeInUp} className="overflow-hidden rounded-2xl border border-border bg-white shadow-sm">
-                      <video src={video.src} controls preload="metadata" className="w-full aspect-video bg-black object-cover" />
-                      <div className="p-5">
-                        <h3 className="text-lg font-semibold text-foreground">{video.title}</h3>
-                        {video.description && <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{video.description}</p>}
-                        <span className="mt-3 inline-block text-xs font-semibold uppercase tracking-wide text-primary">{video.category}</span>
+              {filteredImages.length > 0 && (
+                <>
+                  {/* Album Header */}
+                  <div className="mb-10">
+                    <div className="flex items-center gap-3 mb-3">
+                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                        <Camera className="w-5 h-5 text-primary" />
                       </div>
-                    </motion.article>
-                  ))}
-                </motion.div>
-              ) : !videosLoading ? (
-                <div className="text-center p-10 rounded-2xl border border-border bg-white max-w-xl mx-auto">
-                  <FilmIcon className="w-10 h-10 text-primary mx-auto mb-4" />
-                  <h3 className="text-xl font-bold text-foreground mb-3">No videos yet</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed">We are uploading videos of our solar work. Check back soon!</p>
-                </div>
-              ) : null}
-            </motion.div>
-          ) : (
-            <>
-              {/* Photo Grid */}
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={activeTab}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  {filteredImages.length > 0 && (
-                    <>
-                      {/* Album Header */}
-                      <div className="mb-10">
-                        <div className="flex items-center gap-3 mb-3">
-                          <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
-                            <Camera className="w-5 h-5 text-primary" />
-                          </div>
-                          <div>
-                            <h2 className="text-2xl md:text-3xl font-bold text-foreground">
-                              {activeTab === "All" ? "All Photos" : `${activeTab} Photos`}
-                            </h2>
-                            <p className="text-sm text-muted-foreground">
-                              {filteredImages.length} photos {activeTab !== "All" ? `— ${activeTab.toLowerCase()}` : ""}
-                            </p>
-                          </div>
-                        </div>
-                        <div className="h-px bg-border w-full" />
+                      <div>
+                        <h2 className="text-2xl md:text-3xl font-bold text-foreground">
+                          {activeTab === "All" ? "All Photos" : `${activeTab} Photos`}
+                        </h2>
+                        <p className="text-sm text-muted-foreground">
+                          {filteredImages.length} photos {activeTab !== "All" ? `— ${activeTab.toLowerCase()}` : ""}
+                        </p>
                       </div>
+                    </div>
+                    <div className="h-px bg-border w-full" />
+                  </div>
 
-                      {/* Photo Grid */}
+                  {/* Photo Grid */}
+                  <motion.div
+                    initial="hidden"
+                    whileInView="visible"
+                    viewport={{ once: true }}
+                    variants={stagger}
+                    className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                  >
+                    {filteredImages.map((img, i) => (
                       <motion.div
-                        initial="hidden"
-                        whileInView="visible"
-                        viewport={{ once: true }}
-                        variants={stagger}
-                        className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+                        key={`${img.id}-${i}`}
+                        variants={fadeInUp}
+                        className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
+                        onClick={() => openLightbox(i)}
                       >
-                        {filteredImages.map((img, i) => (
-                          <motion.div
-                            key={`${img.id}-${i}`}
-                            variants={fadeInUp}
-                            className="group relative aspect-[4/3] rounded-xl overflow-hidden cursor-pointer bg-white shadow-sm border border-border hover:shadow-md transition-all"
-                            onClick={() => openLightbox(i)}
-                          >
-                            <img
-                              src={img.src}
-                              alt={img.alt}
-                              loading="lazy"
-                              className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-                            />
-                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-3">
-                              <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
-                                {img.alt}
-                              </span>
-                            </div>
-                          </motion.div>
-                        ))}
+                        <img
+                          src={img.src}
+                          alt={img.alt}
+                          loading="lazy"
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                        />
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors duration-300 flex items-end p-3">
+                          <span className="text-white text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity duration-300 translate-y-2 group-hover:translate-y-0">
+                            {img.alt}
+                          </span>
+                        </div>
                       </motion.div>
-                    </>
-                  )}
-                </motion.div>
-              </AnimatePresence>
+                    ))}
+                  </motion.div>
+                </>
+              )}
+            </motion.div>
+          </AnimatePresence>
 
-              {/* Empty state */}
-              {filteredImages.length === 0 && (
+          {/* Empty state */}
+          {filteredImages.length === 0 && (
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
@@ -283,8 +214,6 @@ export default function GalleryPage() {
                 <Link href="/contact">Contact Us</Link>
               </Button>
             </motion.div>
-              )}
-            </>
           )}
         </div>
       </section>

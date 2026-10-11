@@ -83,32 +83,6 @@ export interface GalleryPhotoResponse {
   photo: GalleryPhoto;
 }
 
-export interface GalleryVideo {
-  id: number;
-  src: string;
-  title: string;
-  description?: string;
-  category: string;
-  sortOrder?: number;
-  createdAt: string;
-}
-
-export interface GalleryVideoList {
-  videos: GalleryVideo[];
-}
-
-export interface GalleryVideoResponse {
-  video: GalleryVideo;
-}
-
-export interface CreateGalleryVideoBody {
-  src: string;
-  title: string;
-  description?: string;
-  category?: string;
-  sortOrder?: number;
-}
-
 export interface CreateGalleryBody {
   src: string;
   alt: string;

@@ -28,7 +28,7 @@ A business website for Philin Solar, a solar energy services provider. Includes 
 
 - `artifacts/philin-solar/src/` — React frontend (pages, components, routing via wouter)
 - `artifacts/api-server/src/` — Express API (routes: `/api/admin`, `/api/news`, `/api/gallery`)
-- `lib/db/src/schema/` — Drizzle ORM schema (`news_posts`, `gallery_photos`, `gallery_videos` tables)
+- `lib/db/src/schema/` — Drizzle ORM schema (`news_posts`, `gallery_photos` tables)
 - `lib/db/drizzle.config.ts` — Drizzle config (reads `DATABASE_URL` from env)
 
 ## Architecture decisions
@@ -37,8 +37,6 @@ A business website for Philin Solar, a solar energy services provider. Includes 
 - Admin auth uses signed cookies; `SESSION_SECRET` is validated at startup
 - `ADMIN_USERNAME` and `ADMIN_PASSWORD` are required env vars — app refuses to start if missing
 - Vite config uses `server.allowedHosts: true` for Replit's proxied iframe environment
-- Uploaded photos use `PRIVATE_OBJECT_DIR/uploads/`; uploaded videos use `PRIVATE_OBJECT_DIR/videos/`
-- PostgreSQL stores media metadata and the `/objects/...` path; file bytes stay in Replit App Storage
 
 ## User preferences
 
@@ -48,4 +46,3 @@ _Populate as you build — explicit user instructions worth remembering across s
 
 - Both `PORT` and `BASE_PATH` must be passed when starting the philin-solar Vite dev server
 - The api-server `dev` script runs a build step before starting — expect ~5s startup
-- Video uploads are limited to 250MB and require a browser-supported video MIME type

@@ -1,6 +1,6 @@
 import { useLocation } from "wouter";
 import { useAuth } from "@/context/auth-context";
-import { Newspaper, Image, Video, LogOut, LayoutDashboard, Plus, Edit3, Trash2, Play } from "lucide-react";
+import { Newspaper, Image, LogOut, LayoutDashboard, Plus, Edit3, Trash2, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useEffect, useState } from "react";
@@ -27,16 +27,6 @@ interface GalleryPhoto {
   createdAt: string;
 }
 
-interface GalleryVideo {
-  id: number;
-  src: string;
-  title: string;
-  description: string | null;
-  category: string;
-  sortOrder: number;
-  createdAt: string;
-}
-
 function useNewsPosts() {
   return useQuery<NewsPost[]>({
     queryKey: ["admin-news"],
@@ -57,18 +47,6 @@ function useGalleryPhotos() {
       if (!res.ok) throw new Error("Failed to fetch gallery");
       const data = await res.json();
       return data.photos || [];
-    },
-  });
-}
-
-function useGalleryVideos() {
-  return useQuery<GalleryVideo[]>({
-    queryKey: ["admin-gallery-videos"],
-    queryFn: async () => {
-      const res = await fetch("/api/admin/gallery/videos", { credentials: "include" });
-      if (!res.ok) throw new Error("Failed to fetch gallery videos");
-      const data = await res.json();
-      return data.videos || [];
     },
   });
 }
@@ -204,7 +182,6 @@ function NewsManager() {
 
 function GalleryManager() {
   const { data: photos, isLoading } = useGalleryPhotos();
-  const { data: videos, isLoading: videosLoading } = useGalleryVideos();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
 
@@ -219,34 +196,15 @@ function GalleryManager() {
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-gallery"] }),
   });
 
-  const deleteVideoMutation = useMutation({
-    mutationFn: async (id: number) => {
-      const res = await fetch(`/api/admin/gallery/videos/${id}`, {
-        method: "DELETE",
-        credentials: "include",
-      });
-      if (!res.ok) throw new Error("Failed to delete video");
-    },
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["admin-gallery-videos"] }),
-  });
-
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold">Gallery Media</h2>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" onClick={() => navigate("/admin/gallery/video-upload")}>
-            <Video className="w-4 h-4 mr-2" />
-            Upload Video
-          </Button>
-          <Button onClick={() => navigate("/admin/gallery/upload")}>
-            <Plus className="w-4 h-4 mr-2" />
-            Upload Photo
-          </Button>
-        </div>
+        <h2 className="text-xl font-semibold">Gallery Photos</h2>
+        <Button onClick={() => navigate("/admin/gallery/upload")}>
+          <Plus className="w-4 h-4 mr-2" />
+          Upload Photo
+        </Button>
       </div>
-      <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Photos</h3>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {isLoading ? (
           <p className="text-muted-foreground col-span-full">Loading...</p>
@@ -269,39 +227,6 @@ function GalleryManager() {
         ) : (
           <p className="text-muted-foreground col-span-full">No photos yet.</p>
         )}
-      </div>
-      </div>
-      <div>
-        <h3 className="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-foreground">Videos</h3>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {videosLoading ? (
-            <p className="text-muted-foreground">Loading...</p>
-          ) : videos && videos.length > 0 ? (
-            videos.map((video) => (
-              <div key={video.id} className="group relative bg-white rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow">
-                <video src={video.src} controls preload="metadata" className="w-full aspect-video object-cover bg-black" />
-                <div className="p-3">
-                  <div className="flex items-start gap-2">
-                    <Play className="w-4 h-4 mt-0.5 text-primary shrink-0" />
-                    <div className="min-w-0">
-                      <p className="font-medium truncate">{video.title}</p>
-                      <p className="text-xs text-muted-foreground uppercase">{video.category}</p>
-                    </div>
-                  </div>
-                </div>
-                <button
-                  onClick={() => { if (confirm("Delete this video?")) deleteVideoMutation.mutate(video.id); }}
-                  className="absolute top-2 right-2 w-8 h-8 bg-black/60 hover:bg-red-500 rounded-full flex items-center justify-center text-white transition-colors"
-                  aria-label={`Delete ${video.title}`}
-                >
-                  <Trash2 className="w-3 h-3" />
-                </button>
-              </div>
-            ))
-          ) : (
-            <p className="text-muted-foreground">No videos yet.</p>
-          )}
-        </div>
       </div>
     </div>
   );

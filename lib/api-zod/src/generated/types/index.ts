@@ -8,15 +8,11 @@
 
 export * from './authStatus';
 export * from './createGalleryBody';
-export * from './createGalleryVideoBody';
 export * from './createNewsBody';
 export * from './errorEnvelope';
 export * from './galleryList';
 export * from './galleryPhoto';
 export * from './galleryPhotoResponse';
-export * from './galleryVideo';
-export * from './galleryVideoList';
-export * from './galleryVideoResponse';
 export * from './healthStatus';
 export * from './loginBody';
 export * from './loginResponse';

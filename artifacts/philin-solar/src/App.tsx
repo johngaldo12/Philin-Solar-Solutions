@@ -18,7 +18,6 @@ import AdminLoginPage from "@/pages/admin/login";
 import AdminDashboard from "@/pages/admin/dashboard";
 import NewsEditorPage from "@/pages/admin/news-editor";
 import GalleryUploadPage from "@/pages/admin/gallery-upload";
-import VideoUploadPage from "@/pages/admin/video-upload";
 import NotFound from "@/pages/not-found";
 
 const queryClient = new QueryClient();
@@ -31,7 +30,6 @@ function Router() {
       <Route path="/admin/news/new" component={NewsEditorPage} />
       <Route path="/admin/news/edit/:id" component={NewsEditorPage} />
       <Route path="/admin/gallery/upload" component={GalleryUploadPage} />
-      <Route path="/admin/gallery/video-upload" component={VideoUploadPage} />
       <Route>
         <Layout>
           <Switch>
